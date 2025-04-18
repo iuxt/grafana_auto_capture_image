@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.png
+*.exe
+.env
+.zip
+chromedriver.*
+chromedriver
+.DS_Store
