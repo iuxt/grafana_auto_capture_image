@@ -76,6 +76,7 @@ if __name__ == "__main__":
         print(f"Processing panel: {panel}")
         username = os.getenv("GF_USER")
         password = os.getenv("GF_PASSWORD")
-        dashboard = GrafanaDashboard(username, password, grafana.uid, grafana.date_from, grafana.date_to, panel['id'], panel['title'])
+        safe_filename = re.sub(r'[\\/*?:"<>|]', '_', panel['title']) + '.png'
+        dashboard = GrafanaDashboard(username, password, grafana.uid, grafana.date_from, grafana.date_to, panel['id'], safe_filename)
         dashboard.render_panel()
         # //todo 文件存在就不下载了。

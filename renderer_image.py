@@ -11,14 +11,14 @@ import time
 
 
 class GrafanaDashboard:
-    def __init__(self, username, password, uid, date_from, date_to, panel_id, panel_title):
+    def __init__(self, username, password, uid, date_from, date_to, panel_id, safe_filename):
         self.username = username
         self.password = password
         self.uid = uid
         self.date_from = date_from
         self.date_to = date_to
         self.panel_id = panel_id
-        self.panel_title = panel_title
+        self.safe_filename = safe_filename
 
 
     def render_panel(self, max_retries=3, retry_interval=5):
@@ -121,8 +121,7 @@ class GrafanaDashboard:
         panel = driver.find_element(By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
 
         # 对 panel 元素进行截图
-        safe_filename = re.sub(r'[\\/*?:"<>|]', '_', self.panel_title) + '.png'
-        panel.screenshot(safe_filename)
+        panel.screenshot(self.safe_filename)
 
         # 退出浏览器
         driver.quit()
