@@ -11,17 +11,12 @@ import time
 
 
 class GrafanaDashboard:
-    def __init__(self, username, password, uid, date_from, date_to, panel_id, safe_filename):
+    def __init__(self, username, password, uid):
         self.username = username
         self.password = password
         self.uid = uid
-        self.date_from = date_from
-        self.date_to = date_to
-        self.panel_id = panel_id
-        self.safe_filename = safe_filename
 
-
-    def render_panel(self, max_retries=3, retry_interval=5):
+    def init_chromium(self):
 
         # 配置Chrome浏览器选项（无界面浏览器）
         chrome_options = Options()
@@ -63,14 +58,18 @@ class GrafanaDashboard:
             )
         )
 
+        self.driver = driver
+
+
+    def render_panel(self, date_from, date_to, panel_id, safe_filename, max_retries=3, retry_interval=5):
 
         # 转到某个仪表板页面
-        dashboard_url = os.getenv("GF_URL") + f"/d/{self.uid}/?orgId=1&from={self.date_from}&to={self.date_to}&timezone=browser&viewPanel=panel-{self.panel_id}"
-        driver.get(dashboard_url)
+        dashboard_url = os.getenv("GF_URL") + f"/d/{self.uid}/?orgId=1&from={date_from}&to={date_to}&timezone=browser&viewPanel=panel-{panel_id}"
+        self.driver.get(dashboard_url)
 
 
         # 等待仪表板加载完成，直到某个元素（例如第一个面板）可见
-        WebDriverWait(driver, 60).until(
+        WebDriverWait(self.driver, 60).until(
             EC.presence_of_element_located(
                 (By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
             )
@@ -78,7 +77,7 @@ class GrafanaDashboard:
 
 
         # 检测 Spinner 是否消失（等待最多60秒）
-        WebDriverWait(driver, 60).until(
+        WebDriverWait(self.driver, 60).until(
             EC.invisibility_of_element_located(
                 (By.XPATH, '//*[@class="css-1p4srcl-Icon"]')
             )
@@ -87,17 +86,17 @@ class GrafanaDashboard:
         retries = 0
         while retries < max_retries:
             try:
-                element = driver.find_element(By.XPATH, '//*[@class="css-om0k8z-toolbar-button-panel-header-state-button"]')
+                element = self.driver.find_element(By.XPATH, '//*[@class="css-om0k8z-toolbar-button-panel-header-state-button"]')
                 print(f"第 {retries + 1} 次生成图表失败，正在重试...")
                 retries += 1
                 time.sleep(retry_interval)
-                driver.refresh()
-                WebDriverWait(driver, 30).until(
+                self.driver.refresh()
+                WebDriverWait(self.driver, 30).until(
                     EC.presence_of_element_located(
                         (By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
                     )
                 )
-                WebDriverWait(driver, 60).until(
+                WebDriverWait(self.driver, 60).until(
                     EC.invisibility_of_element_located(
                         (By.XPATH, '//*[@class="css-1p4srcl-Icon"]')
                     )
@@ -111,20 +110,18 @@ class GrafanaDashboard:
 
         if retries == max_retries:
             print(f"面板 '{self.panel_title}' 重试 {max_retries} 次仍然失败，跳过该面板。")
-            driver.quit()
+            self.driver.quit()
             return
 
 
 
 
         # 定位目标 panel 元素
-        panel = driver.find_element(By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
+        panel = self.driver.find_element(By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
 
         # 对 panel 元素进行截图
-        panel.screenshot(self.safe_filename)
+        panel.screenshot(safe_filename)
 
-        # 退出浏览器
-        driver.quit()
 
 
 
@@ -137,7 +134,10 @@ if __name__ == "__main__":
     date_from = "now-30d"
     date_to = "now"
     panel_id = "16"
-    panel_title = "系统负载"
+    safe_filename = "系统负载.png"
 
-    dashboard = GrafanaDashboard(username, password, uid, date_from, date_to, panel_id, panel_title)
-    dashboard.render_panel()
+    
+    dashboard = GrafanaDashboard(username, password, uid )
+    dashboard.init_chromium()
+    dashboard.render_panel(date_from, date_to, panel_id, safe_filename)
+    dashboard.driver.quit()

@@ -72,11 +72,15 @@ if __name__ == "__main__":
     
     # 遍历所有面板进行下载
     panels = grafana.extract_panel_info(dashboard_json)
+    username = os.getenv("GF_USER")
+    password = os.getenv("GF_PASSWORD")
+    dashboard = GrafanaDashboard(username, password, grafana.uid)
+    dashboard.init_chromium()
+
     for panel in panels:
         print(f"Processing panel: {panel}")
-        username = os.getenv("GF_USER")
-        password = os.getenv("GF_PASSWORD")
         safe_filename = re.sub(r'[\\/*?:"<>|]', '_', panel['title']) + '.png'
-        dashboard = GrafanaDashboard(username, password, grafana.uid, grafana.date_from, grafana.date_to, panel['id'], safe_filename)
-        dashboard.render_panel()
+        dashboard.render_panel(date_from=grafana.date_from, date_to=grafana.date_to, panel_id=panel['id'], safe_filename=safe_filename)
         # //todo 文件存在就不下载了。
+    
+    dashboard.driver.quit()
