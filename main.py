@@ -80,7 +80,10 @@ if __name__ == "__main__":
     for panel in panels:
         print(f"Processing panel: {panel}")
         safe_filename = re.sub(r'[\\/*?:"<>|]', '_', panel['title']) + '.png'
-        dashboard.render_panel(date_from=grafana.date_from, date_to=grafana.date_to, panel_id=panel['id'], safe_filename=safe_filename)
-        # //todo 文件存在就不下载了。
-    
+        if os.path.exists(safe_filename):
+            print(f"File {safe_filename} already exists, skipping...")
+            continue
+        else:
+            dashboard.render_panel(date_from=grafana.date_from, date_to=grafana.date_to, panel_id=panel['id'], safe_filename=safe_filename)
+        
     dashboard.driver.quit()

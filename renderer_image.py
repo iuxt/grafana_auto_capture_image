@@ -24,10 +24,12 @@ class GrafanaDashboard:
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-extensions")
         # chrome_options.binary_location = ""
-        # chrome_options.add_argument("--headless")  # 无头模式
-        # chrome_options.add_argument("--disable-gpu")  # 禁用GPU加速（可选）
+        # chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--disable-gpu")
+
+        # 设置ChromeDriver的路径
         ser = Service()
-        ser.executable_path = r'./chromedriver'	# 指定 ChromeDriver 的路径
+        # ser.executable_path = r'./chromedriver'
 
 
         # 初始化浏览器
