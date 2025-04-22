@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 import os
 import time
+import sys
 from renderer_image import GrafanaDashboard
 from dotenv import load_dotenv
 
@@ -59,17 +60,15 @@ class GrafanaApi:
 
 if __name__ == "__main__":
     grafana = GrafanaApi(
-        uid="gw-service",
+        uid=sys.argv[1],
         api_key=os.getenv("GF_API_KEY"),
-        date_from="2025-03-01T00:00:00.000Z",
-        date_to="2025-03-30T00:00:00.000Z"
+        # date_from="2025-03-01T00:00:00.000Z",
+        date_from=sys.argv[2] if len(sys.argv) > 2 else "now-1d",
+        date_to=sys.argv[3] if len(sys.argv) > 3 else "now"
     )
     
-    # 获取并保存仪表板JSON
     dashboard_json = grafana.get_dashboard_json()
-    # with open('dashboard.json', 'w') as f:
-    #     f.write(json.dumps(dashboard_json))
-    
+
     # 遍历所有面板进行下载
     panels = grafana.extract_panel_info(dashboard_json)
     username = os.getenv("GF_USER")
@@ -79,7 +78,8 @@ if __name__ == "__main__":
 
     for panel in panels:
         print(f"Processing panel: {panel}")
-        safe_filename = re.sub(r'[\\/*?:"<>|]', '_', panel['title']) + '.png'
+        os.makedirs('/tmp/output/', exist_ok=True)
+        safe_filename = '/tmp/output/' + re.sub(r'[\\/*?:"<>|]', '_', panel['title']) + '.png'
         if os.path.exists(safe_filename):
             print(f"File {safe_filename} already exists, skipping...")
             continue
