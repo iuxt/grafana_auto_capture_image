@@ -24,8 +24,8 @@ class GrafanaDashboard:
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-extensions")
         # chrome_options.binary_location = ""
-        # chrome_options.add_argument("--headless")
-        # chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-gpu")
 
         # 设置ChromeDriver的路径
         ser = Service()
