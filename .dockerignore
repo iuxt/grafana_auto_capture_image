@@ -1,0 +1,6 @@
+chromedriver
+chromedriver*
+venv/
+__pycache__/
+.git/
+
