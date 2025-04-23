@@ -63,6 +63,28 @@ class GrafanaDashboard:
         self.driver = driver
 
 
+    def wait_for_element(self, xpath, timeout=60):
+        """等待元素可见，直到超时"""
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_element_located((By.XPATH, xpath))
+            )
+        except Exception as e:
+            print(f"等待元素失败: {str(e)}")
+            return None
+
+
+    def wait_for_element_disappear(self, xpath, timeout=60):
+        """等待元素消失，直到超时"""
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.invisibility_of_element_located((By.XPATH, xpath))
+            )
+        except Exception as e:
+            print(f"等待元素消失失败: {str(e)}")
+            return None
+        
+
     def render_panel(self, date_from, date_to, panel_id, safe_filename, max_retries=3, retry_interval=5):
 
         # 转到某个仪表板页面
@@ -70,18 +92,10 @@ class GrafanaDashboard:
         self.driver.get(dashboard_url)
 
         # 等待仪表板加载完成，直到某个元素（例如第一个面板）可见
-        WebDriverWait(self.driver, 60).until(
-            EC.presence_of_element_located(
-                (By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
-            )
-        )
+        self.wait_for_element('//*[@class="css-itdw1b-panel-container"]')    
 
         # 检测 Spinner 是否消失（等待最多60秒）
-        WebDriverWait(self.driver, 60).until(
-            EC.invisibility_of_element_located(
-                (By.XPATH, '//*[@class="css-1p4srcl-Icon"]')
-            )
-        )
+        self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]')
 
         # 检查面板是否成功加载，如果没有加载成功，则重试
         retries = 0
@@ -92,16 +106,12 @@ class GrafanaDashboard:
                 retries += 1
                 time.sleep(retry_interval)
                 self.driver.refresh()
-                WebDriverWait(self.driver, 60).until(
-                    EC.presence_of_element_located(
-                        (By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
-                    )
-                )
-                WebDriverWait(self.driver, 60).until(
-                    EC.invisibility_of_element_located(
-                        (By.XPATH, '//*[@class="css-1p4srcl-Icon"]')
-                    )
-                )
+                # 等待仪表板加载完成，直到某个元素（例如第一个面板）可见
+                self.wait_for_element('//*[@class="css-itdw1b-panel-container"]')    
+
+                # 检测 Spinner 是否消失（等待最多60秒）
+                self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]')
+                
             except NoSuchElementException:
                 print("生成图表成功")
                 break
