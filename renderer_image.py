@@ -69,7 +69,6 @@ class GrafanaDashboard:
         dashboard_url = os.getenv("GF_URL") + f"/d/{self.uid}/?orgId=1&from={date_from}&to={date_to}&timezone=browser&viewPanel=panel-{panel_id}"
         self.driver.get(dashboard_url)
 
-
         # 等待仪表板加载完成，直到某个元素（例如第一个面板）可见
         WebDriverWait(self.driver, 60).until(
             EC.presence_of_element_located(
@@ -77,14 +76,14 @@ class GrafanaDashboard:
             )
         )
 
-
         # 检测 Spinner 是否消失（等待最多60秒）
         WebDriverWait(self.driver, 60).until(
             EC.invisibility_of_element_located(
                 (By.XPATH, '//*[@class="css-1p4srcl-Icon"]')
             )
         )
-        # 感叹号图标: css-om0k8z-toolbar-button-panel-header-state-button
+
+        # 检查面板是否成功加载，如果没有加载成功，则重试
         retries = 0
         while retries < max_retries:
             try:
@@ -93,7 +92,7 @@ class GrafanaDashboard:
                 retries += 1
                 time.sleep(retry_interval)
                 self.driver.refresh()
-                WebDriverWait(self.driver, 30).until(
+                WebDriverWait(self.driver, 60).until(
                     EC.presence_of_element_located(
                         (By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
                     )
@@ -112,7 +111,6 @@ class GrafanaDashboard:
 
         if retries == max_retries:
             print(f"面板 '{safe_filename}' 重试 {max_retries} 次仍然失败，跳过该面板。")
-            self.driver.quit()
             return
 
 
