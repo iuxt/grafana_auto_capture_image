@@ -94,8 +94,8 @@ class GrafanaDashboard:
         # 等待仪表板加载完成，直到某个元素（例如第一个面板）可见
         self.wait_for_element('//*[@class="css-itdw1b-panel-container"]')    
 
-        # 检测 Spinner 是否消失（等待最多60秒）
-        self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]')
+        # 检测 Spinner 是否消失
+        self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]', timeout=120)
 
         # 检查面板是否成功加载，如果没有加载成功，则重试
         retries = 0
@@ -109,8 +109,8 @@ class GrafanaDashboard:
                 # 等待仪表板加载完成，直到某个元素（例如第一个面板）可见
                 self.wait_for_element('//*[@class="css-itdw1b-panel-container"]')    
 
-                # 检测 Spinner 是否消失（等待最多60秒）
-                self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]')
+                # 检测 Spinner 是否消失
+                self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]', timeout=120)
                 
             except NoSuchElementException:
                 print("生成图表成功")
