@@ -111,7 +111,7 @@ class GrafanaDashboard:
                 break
 
         if retries == max_retries:
-            print(f"面板 '{self.panel_title}' 重试 {max_retries} 次仍然失败，跳过该面板。")
+            print(f"面板 '{safe_filename}' 重试 {max_retries} 次仍然失败，跳过该面板。")
             self.driver.quit()
             return
 
