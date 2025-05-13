@@ -46,10 +46,10 @@ RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debi
     ttf-wqy-microhei && \
     fc-cache -f -v && \
     apt clean all
-ADD ./ /code
+ADD requirements.txt /code/requirements.txt
 RUN python3 -m venv /venv && \
     . /venv/bin/activate && \
     pip3 install --upgrade pip && \
     pip3 install -r /code/requirements.txt
 WORKDIR /code
-CMD ["/venv/bin/python3", "main.py", "gw-service", "2025-03-01T00:00:00.000Z", "2025-03-02T00:00:00.000Z"]
+CMD ["/venv/bin/python3"]

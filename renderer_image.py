@@ -26,8 +26,11 @@ class GrafanaDashboard:
         # chrome_options.binary_location = ""
 
         if debug == "False":
+            print("debug: false")
             chrome_options.add_argument("--headless")
             chrome_options.add_argument("--disable-gpu")
+        else:
+            print("debug: true")
 
         # 设置ChromeDriver的路径
         ser = Service()
