@@ -10,17 +10,17 @@ from dotenv import load_dotenv
 
 
 class GrafanaApi:
-    def __init__(self, api_key, uid, date_from, date_to):
+    def __init__(self, url, api_key, uid, date_from, date_to):
+        self.url = url
         self.api_key = api_key
         self.uid = uid
         self.date_from = date_from
         self.date_to = date_to
-        load_dotenv()
 
     def get_dashboard_json(self):
         """获取仪表板 JSON 数据"""
         response = requests.get(
-            os.getenv("GF_URL") + f"/api/dashboards/uid/{self.uid}",
+            url = f"{self.url}" + f"/api/dashboards/uid/{self.uid}",
             headers={"Authorization": f"Bearer {self.api_key}"}
         )
         return response.json()
@@ -59,23 +59,29 @@ class GrafanaApi:
 
 
 if __name__ == "__main__":
+    load_dotenv()
+
     grafana = GrafanaApi(
         uid=sys.argv[1],
         api_key=os.getenv("GF_API_KEY"),
+        url=os.getenv("GF_URL"),
         # date_from="2025-03-01T00:00:00.000Z",
         date_from=sys.argv[2] if len(sys.argv) > 2 else "now-1d",
         date_to=sys.argv[3] if len(sys.argv) > 3 else "now"
     )
     
-    dashboard_json = grafana.get_dashboard_json()
+    # 初始化浏览器，打开并登录Grafana
+    dashboard = GrafanaDashboard(
+        url = grafana.url,
+        username = os.getenv("GF_USER"), 
+        password = os.getenv("GF_PASSWORD"), 
+        uid = grafana.uid
+        )
+    dashboard.init_chromium(debug=os.getenv("DEBUG"))
 
     # 遍历所有面板进行下载
+    dashboard_json = grafana.get_dashboard_json()
     panels = grafana.extract_panel_info(dashboard_json)
-    username = os.getenv("GF_USER")
-    password = os.getenv("GF_PASSWORD")
-    dashboard = GrafanaDashboard(username, password, grafana.uid)
-    dashboard.init_chromium()
-
     for panel in panels:
         print(f"Processing panel: {panel}")
         os.makedirs('/tmp/output/', exist_ok=True)

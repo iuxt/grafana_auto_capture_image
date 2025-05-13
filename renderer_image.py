@@ -11,12 +11,13 @@ import time
 
 
 class GrafanaDashboard:
-    def __init__(self, username, password, uid):
+    def __init__(self, url, username, password, uid):
+        self.url = url
         self.username = username
         self.password = password
         self.uid = uid
 
-    def init_chromium(self):
+    def init_chromium(self, debug):
 
         # 配置Chrome浏览器选项（无界面浏览器）
         chrome_options = Options()
@@ -24,8 +25,10 @@ class GrafanaDashboard:
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-extensions")
         # chrome_options.binary_location = ""
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--disable-gpu")
+
+        if debug == "False":
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--disable-gpu")
 
         # 设置ChromeDriver的路径
         ser = Service()
@@ -37,7 +40,7 @@ class GrafanaDashboard:
         driver.set_window_size(1920, 1080)
 
         # 打开 Grafana 登录页面
-        grafana_url = os.getenv("GF_URL") + "/login"
+        grafana_url = f"{self.url}" + "/login"
         driver.get(grafana_url)
 
         # 等待登录页面加载完成，直到用户名输入框可见
@@ -88,7 +91,7 @@ class GrafanaDashboard:
     def render_panel(self, date_from, date_to, panel_id, safe_filename, max_retries=3, retry_interval=5):
 
         # 转到某个仪表板页面
-        dashboard_url = os.getenv("GF_URL") + f"/d/{self.uid}/?orgId=1&from={date_from}&to={date_to}&timezone=browser&viewPanel=panel-{panel_id}"
+        dashboard_url = self.url + f"/d/{self.uid}/?orgId=1&from={date_from}&to={date_to}&timezone=browser&viewPanel=panel-{panel_id}"
         self.driver.get(dashboard_url)
 
         # 等待仪表板加载完成，直到某个元素（例如第一个面板）可见
@@ -138,16 +141,19 @@ class GrafanaDashboard:
 
 if __name__ == "__main__":
     # 示例用法
+    from dotenv import load_dotenv
+    load_dotenv()
+    url = os.getenv("GF_URL")
     username = os.getenv("GF_USER")
     password = os.getenv("GF_PASSWORD")
     uid = "gw-service"
-    date_from = "now-30d"
+    date_from = "now-3d"
     date_to = "now"
     panel_id = "16"
     safe_filename = "系统负载.png"
 
     
-    dashboard = GrafanaDashboard(username, password, uid )
-    dashboard.init_chromium()
+    dashboard = GrafanaDashboard(url, username, password, uid )
+    dashboard.init_chromium(debug=os.getenv("DEBUG"))
     dashboard.render_panel(date_from, date_to, panel_id, safe_filename)
     dashboard.driver.quit()
