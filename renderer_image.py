@@ -156,7 +156,7 @@ class GrafanaDashboard:
 if __name__ == "__main__":
     # 示例用法
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(".env")
     url = os.getenv("GF_URL")
     username = os.getenv("GF_USER")
     password = os.getenv("GF_PASSWORD")
@@ -168,6 +168,7 @@ if __name__ == "__main__":
     safe_filename = "系统负载.png"
 
     dashboard = GrafanaDashboard(url, username, password, uid )
-    dashboard.init_chromium(debug=os.getenv("DEBUG"))
+    print(os.getenv("CHROME_DEBUG"))
+    dashboard.init_chromium(debug=os.getenv("CHROME_DEBUG"))
     dashboard.render_panel(date_from, date_to, panel_id, safe_filename)
     dashboard.driver.quit()

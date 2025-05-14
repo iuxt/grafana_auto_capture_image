@@ -77,7 +77,7 @@ if __name__ == "__main__":
         password = os.getenv("GF_PASSWORD"), 
         uid = grafana.uid
         )
-    dashboard.init_chromium(debug=os.getenv("DEBUG"))
+    dashboard.init_chromium(debug=os.getenv("CHROME_DEBUG"))
 
     # 遍历所有面板进行下载
     dashboard_json = grafana.get_dashboard_json()
