@@ -93,23 +93,41 @@ if __name__ == "__main__":
         else:
             dashboard.render_panel(date_from=grafana.date_from, date_to=grafana.date_to, panel_id=panel['id'], safe_filename=safe_filename)
             
-            if 'CPU使用率' in panel['title']:
-                data = GetMonitorData(dashboard.driver).get_max_data()
+            def save_result(title, data):
                 print(panel['title'], data, '---------')
-            elif '内存使用率' in panel['title']:
+                with open('/tmp/output/' + sys.argv[1] + '-result.txt', 'a') as f:
+                    f.write(title + '\t')
+                    f.write(str(data) + '\n')
+            
+            if '节点CPU使用率' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
-                print(panel['title'], data, '---------')
-            elif '磁盘使用率' in panel['title']:
+                save_result(panel['title'], data)
+            elif '节点内存使用率' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
-                print(panel['title'], data, '---------')
+                save_result(panel['title'], data)
+            elif '节点磁盘使用率' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                save_result(panel['title'], data)
             elif 'SDK内存占用率' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
-                print(panel['title'], data, '---------')
-            else:
+                save_result(panel['title'], data)
+            elif '重启次数统计' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
-                print(panel['title'], data, '---------')
-            with open('/tmp/output/' + sys.argv[1] + '-result.txt', 'a') as f:
-                f.write(panel['title'] + '\t')
-                f.write(str(data) + '\n')
+                save_result(panel['title'], data)
+            elif 'MySQL连接数百分比' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                save_result(panel['title'], data)
+            elif '每分钟慢查询数量' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                save_result(panel['title'], data)
+            elif 'Kafka消费组延迟' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                save_result(panel['title'], data)
+            elif 'Redis每秒操作数' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                save_result(panel['title'], data)
+            else:
+                pass
+
 
     dashboard.driver.quit()
