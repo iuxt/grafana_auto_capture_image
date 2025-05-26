@@ -7,6 +7,7 @@ import time
 import sys
 from renderer_image import GrafanaDashboard
 from dotenv import load_dotenv
+from get_monitor_data import GetMonitorData
 
 
 class GrafanaApi:
@@ -91,5 +92,22 @@ if __name__ == "__main__":
             continue
         else:
             dashboard.render_panel(date_from=grafana.date_from, date_to=grafana.date_to, panel_id=panel['id'], safe_filename=safe_filename)
-        
+            
+            if 'CPU使用率' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                print(panel['title'], data, '---------')
+            elif '内存使用率' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                print(panel['title'], data, '---------')
+            elif '磁盘使用率' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                print(panel['title'], data, '---------')
+            elif 'SDK内存占用率' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                print(panel['title'], data, '---------')
+            else:
+                data = GetMonitorData(dashboard.driver).get_max_data()
+                print(panel['title'], data, '---------')
+
+
     dashboard.driver.quit()

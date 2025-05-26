@@ -36,7 +36,7 @@ class GrafanaDashboard:
         ser = Service(service_args=["--disable-build-check"])
         # 设置ChromeDriver的路径
         # ser.executable_path = r'/opt/homebrew/bin/chromedriver'
-        
+
         # 初始化浏览器
         driver = webdriver.Chrome(options=chrome_options, service=ser)
         driver.set_window_size(1920, 1080)
@@ -149,8 +149,6 @@ class GrafanaDashboard:
         # 对 panel 元素进行截图
         panel.screenshot(safe_filename)
         print(f"截图保存到：{safe_filename}")
-
-
 
 
 
