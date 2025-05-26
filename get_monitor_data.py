@@ -49,6 +49,17 @@ class GetMonitorData:
             return max_value[0]
     
 
+    def get_table_max_data(self):
+        data = []
+        for i in self.driver.find_elements(By.XPATH, '//*[@class="css-1yrzrqq-cellContainerOverflow"]'):
+            data.append(i.text.replace("\n", " ").split(" "))
+        print("data=======", data)
+        # data: [['idk-mob-sdk-server-67847b6fdc-2rd4k'], ['0'], ['idk-mob-sdk-server-67847b6fdc-4ck49'], ['0'], ['idk-mob-sdk-server-67847b6fdc-flr6h'], ['0'], ['idk-mob-sdk-server-67847b6fdc-knbnr'], ['0'], ['idk-mob-sdk-server-67847b6fdc-knmnc'], ['0'], ['idk-mob-sdk-server-67847b6fdc-shzqr'], ['0'], ['idk-mob-sdk-server-67847b6fdc-z6jzn'], ['0'], ['idk-mob-sdk-server-67847b6fdc-zz69r'], ['0'], ['idk-oms-server-748d45cb44-ngzdh'], ['0'], ['idk-oms-wfe-5cbb694975-ndvmd'], ['0'], ['idk-oms-wfe-5cbb694975-pgrmx'], ['0'], ['idk-supplier-server-77c9c59dfb-c6tct'], ['0'], ['idk-supplier-server-77c9c59dfb-s4s64'], ['0'], ['idk-supplier-wfe-77f49cbbf7-wmqdt'], ['0'], ['idk-supplier-wfe-77f49cbbf7-z7d7v'], ['0'], ['idk-tsp-server-777699864f-75n9d'], ['0']]
+        numbers = [int(item[0]) for item in data if item[0].isdigit()]  # 提取所有数字并转换为整数
+        max_value = max(numbers) if numbers else None  # 获取最大值，防止空列表
+        return max_value
+
+
     def get_specified_data(self, text):
         """获取指定的监控数据"""
         usage_list = self.driver.find_elements(By.XPATH, '//*[@class="css-fpx8k9-LegendRow"]')

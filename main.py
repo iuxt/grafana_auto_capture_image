@@ -112,7 +112,7 @@ if __name__ == "__main__":
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)
             elif '重启次数统计' in panel['title']:
-                data = GetMonitorData(dashboard.driver).get_max_data()
+                data = GetMonitorData(dashboard.driver).get_table_max_data()
                 save_result(panel['title'], data)
             elif 'MySQL连接数百分比' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
