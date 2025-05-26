@@ -8,7 +8,7 @@ import sys
 from renderer_image import GrafanaDashboard
 from dotenv import load_dotenv
 from get_monitor_data import GetMonitorData
-
+import send_mail
 
 class GrafanaApi:
     def __init__(self, url, api_key, uid, date_from, date_to):
@@ -131,3 +131,12 @@ if __name__ == "__main__":
 
 
     dashboard.driver.quit()
+
+    # 打包，发邮件
+    source_dir = "/tmp/output"
+    zip_filename = "/tmp/" + sys.argv[1] +  ".zip"
+    to_email = "likun.zhang@ingeek.com"
+    with open('/tmp/output/' + sys.argv[1] + '-result.txt', 'r') as f:
+        body = f.read()
+    send_mail.zip_files(source_dir, zip_filename)
+    send_mail.send_email(zip_filename, to_email, subject='巡检报告', body=body)
