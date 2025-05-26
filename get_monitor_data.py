@@ -27,10 +27,8 @@ class GetMonitorData:
         else:
             # 获取最大值
             max_value = max(data, key=lambda x: extract_number(x[0]))
-
-            # 输出结果
-            max_num = extract_number(max_value[0])
-            print(f"最大值: {max_value[0]}，转换为数字: {max_num}")
+            print(f"最大值: {max_value[0]}")
+            return max_value[0]
     
 
     def get_specified_data(self, text):

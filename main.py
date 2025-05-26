@@ -108,6 +108,8 @@ if __name__ == "__main__":
             else:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 print(panel['title'], data, '---------')
-
+            with open('/tmp/output/' + sys.argv[1] + '-result.txt', 'a') as f:
+                f.write(panel['title'] + '\t')
+                f.write(str(data) + '\n')
 
     dashboard.driver.quit()
