@@ -69,7 +69,7 @@ if __name__ == "__main__":
         print("Error: Missing argument for result file.")
         sys.exit(1)
 
-    report_filename = '/tmp/output/' + sys.argv[1] + '-result.txt'
+    report_filename = '/tmp/' + sys.argv[1] + '-result.txt'
     try:
         with open(report_filename, 'r') as f:
             body = f.read()

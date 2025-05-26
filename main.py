@@ -95,7 +95,7 @@ if __name__ == "__main__":
             
             def save_result(title, data):
                 print(panel['title'], data, '---------')
-                with open('/tmp/output/' + sys.argv[1] + '-result.txt', 'a') as f:
+                with open('/tmp/' + sys.argv[1] + '-result.txt', 'a') as f:
                     f.write(title + '\t')
                     f.write(str(data) + '\n')
             
@@ -133,10 +133,16 @@ if __name__ == "__main__":
     dashboard.driver.quit()
 
     # 打包，发邮件
+    load_dotenv('.env')
+    to_email = os.getenv('MAIL_RECEIVERS')
+    from_email = os.getenv('EMAIL_USER')
+    password = os.getenv('EMAIL_PASSWORD')
+    smtp_server = os.getenv('SMTP_SERVER')
+    smtp_port = int(os.getenv('SMTP_PORT', 465))
     source_dir = "/tmp/output"
     zip_filename = "/tmp/" + sys.argv[1] +  ".zip"
-    to_email = "likun.zhang@ingeek.com"
-    with open('/tmp/output/' + sys.argv[1] + '-result.txt', 'r') as f:
+    with open('/tmp/' + sys.argv[1] + '-result.txt', 'r') as f:
         body = f.read()
     send_mail.zip_files(source_dir, zip_filename)
-    send_mail.send_email(zip_filename, to_email, subject='巡检报告', body=body)
+    send_mail.send_email(zip_filename, to_email, subject='巡检报告', body=body, from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
+    

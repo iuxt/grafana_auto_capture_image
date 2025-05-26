@@ -16,7 +16,25 @@ class GetMonitorData:
 
         print("data=======", data)
         # data: [['272', 'ms'], ['192', 'ms'], ['46.6', 'ms'], ['38.8', 'ms'], ['29.8', 'ms'], ['24.5', 'ms']]
-        # 提取数字
+
+        # 提取数字并判断单位
+        for item in data:
+            if len(item) < 2:
+                continue
+            else:
+                value, unit = item
+                if unit == 'ms':
+                    value = float(value)  # 转换为浮动数字
+                elif unit == 's':
+                    value = float(value) * 1000  # 秒转换为毫秒
+                elif unit == 'K':
+                    value = float(value) * 1000
+                elif unit == 'M':
+                    value = float(value) * 1000000
+                item[0] = str(value)  # 将转换后的值赋回数据中
+        
+
+
         def extract_number(value):
             match = re.match(r"(\d+(\.\d+)?)", value)  # 匹配整数或浮动数
             return float(match.group(0)) if match else None
