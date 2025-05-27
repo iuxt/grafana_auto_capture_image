@@ -8,7 +8,8 @@ class GetMonitorData:
         self.driver = driver
 
     def get_max_data(self):
-        """获取最大监控数据
+        """
+        获取最大监控数据,折线图需要有table类型的数据展示出来
         """
         data = []
         for i in self.driver.find_elements(By.XPATH, '//*[@class="css-s2uf1z"]'):
