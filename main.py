@@ -140,7 +140,7 @@ if __name__ == "__main__":
     smtp_server = os.getenv('SMTP_SERVER')
     smtp_port = int(os.getenv('SMTP_PORT', 465))
     source_dir = "/tmp/output"
-    zip_filename = "/tmp/" + sys.argv[1] +  ".zip"
+    zip_filename = "/tmp/" + datetime.datetime.now().strftime('%Y-%m') + sys.argv[1] +  ".zip"
     with open('/tmp/' + sys.argv[1] + '-result.txt', 'r') as f:
         body = f.read()
     send_mail.zip_files(source_dir, zip_filename)
