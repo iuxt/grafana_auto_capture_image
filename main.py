@@ -85,8 +85,10 @@ if __name__ == "__main__":
     panels = grafana.extract_panel_info(dashboard_json)
     for panel in panels:
         print(f"Processing panel: {panel}")
-        os.makedirs('/tmp/output/' + panel['row'] + '/', exist_ok=True)
-        safe_filename = '/tmp/output/' + panel['row'] + '/' + re.sub(r'[\\/*?:"<>|]', '_', panel['title']) + '.png'
+        row_value = panel.get('row', None)
+        row_value = '' if row_value is None else str(row_value)
+        os.makedirs('/tmp/output/' + row_value + '/', exist_ok=True)
+        safe_filename = '/tmp/output/' + row_value + '/' + re.sub(r'[\\/*?:"<>|]', '_', panel['title']) + '.png'
         if os.path.exists(safe_filename):
             print(f"File {safe_filename} already exists, skipping...")
             continue
