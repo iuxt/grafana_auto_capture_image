@@ -213,7 +213,7 @@ if __name__ == "__main__":
             <thead>
                 <tr>
                     <th>监控指标</th>
-                    <th>当前值</th>
+                    <th>最大值</th>
                     <th>状态</th>
                 </tr>
             </thead>
