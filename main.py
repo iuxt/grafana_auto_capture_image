@@ -140,9 +140,123 @@ if __name__ == "__main__":
     smtp_server = os.getenv('SMTP_SERVER')
     smtp_port = int(os.getenv('SMTP_PORT', 465))
     source_dir = "/tmp/output"
-    zip_filename = "/tmp/" + datetime.datetime.now().strftime('%Y-%m') + sys.argv[1] +  ".zip"
+    zip_filename = "/tmp/" + datetime.now().strftime('%Y-%m-%d') + '_' + sys.argv[1] +  ".zip"
     with open('/tmp/' + sys.argv[1] + '-result.txt', 'r') as f:
         body = f.read()
+        tmp_dict = {}
+        list = body.strip().split('\n')
+        for i in list:
+            key, value = i.split('\t')
+            tmp_dict[key] = value
+        # 构建HTML内容
+        html_content = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; }}
+        .container {{ max-width: 800px; margin: 0 auto; }}
+        .header {{ background-color: #2c3e50; color: white; padding: 15px; border-radius: 5px; }}
+        .timestamp {{ font-size: 0.9em; color: #666; text-align: right; }}
+        
+        /* 表格样式 */
+        .monitor-table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }}
+        .monitor-table th, .monitor-table td {{
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }}
+        .monitor-table th {{
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+        }}
+        
+        /* 进度条样式 */
+        .progress-container {{
+            background-color: #f3f3f3;
+            border-radius: 3px;
+            height: 20px;
+            width: 100%;
+            margin-top: 2px;
+        }}
+        .progress-bar {{
+            border-radius: 3px;
+            height: 100%;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.9em;
+        }}
+        .low-risk {{ background-color: #28a745; }}    /* 绿色 */
+        .medium-risk {{ background-color: #ffc107; }} /* 黄色 */
+        .high-risk {{ background-color: #dc3545; }}   /* 红色 */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>巡检报告</h2>
+            <p class="timestamp">生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        </div>
+        
+        <table class="monitor-table">
+            <thead>
+                <tr>
+                    <th>监控指标</th>
+                    <th>当前值</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody>
+"""
+    
+        # 格式化数据并添加到HTML表格
+        for key, value in tmp_dict.items():
+            # 检查是否为百分比值
+            is_percentage = False
+            value_str = str(value)
+            if isinstance(value, (int, float)):
+                value_str = f"{value:.2f}"
+            if value_str.endswith('%'):
+                is_percentage = True
+                percent = float(value_str.replace('%', ''))
+                # 确定进度条颜色
+                if percent < 50:
+                    risk_class = "low-risk"
+                elif percent < 80:
+                    risk_class = "medium-risk"
+                else:
+                    risk_class = "high-risk"
+            
+            # 添加表格行
+            html_content += f"                <tr>\n"
+            html_content += f"                    <td>{key}</td>\n"
+            html_content += f"                    <td>{value_str}</td>\n"
+            html_content += f"                    <td>\n"
+            
+            if is_percentage:
+                html_content += f"                        <div class=\"progress-container\">\n"
+                html_content += f"                            <div class=\"progress-bar {risk_class}\" style=\"width: {percent}%\">{value_str}</div>\n"
+                html_content += f"                        </div>\n"
+            else:
+                html_content += f"                        -"
+            
+            html_content += f"                    </td>\n"
+            html_content += f"                </tr>\n"
+        
+        # 完成HTML内容
+        html_content += f"""            </tbody>
+            </table>
+            <p class="timestamp">报告生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        </div>
+    </body>
+    </html>"""
+    
     send_mail.zip_files(source_dir, zip_filename)
-    send_mail.send_email(zip_filename, to_email, subject='巡检报告', body=body, from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
+    send_mail.send_email(zip_filename, to_email, subject='巡检报告', body=html_content, from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
     

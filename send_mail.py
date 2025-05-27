@@ -27,7 +27,7 @@ def send_email(zip_filename, to_email, subject=None, body=None, from_email=None,
     msg['From'] = from_email
     msg['To'] = to_email
     msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+    msg.attach(MIMEText(body, 'html', 'utf-8'))
 
     print(zip_filename, to_email, subject, body, from_email, password, smtp_server, smtp_port)
     # 添加附件
