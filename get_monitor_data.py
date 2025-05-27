@@ -24,7 +24,7 @@ class GetMonitorData:
             else:
                 value, unit = item
                 if unit == 'ms':
-                    value = float(value)  # 转换为浮动数字
+                    value = float(value)
                 elif unit == 's':
                     value = float(value) * 1000  # 秒转换为毫秒
                 elif unit == 'K':
@@ -50,14 +50,44 @@ class GetMonitorData:
     
 
     def get_table_max_data(self):
+        """
+        针对表格数据，并且数据不带单位的情况
+        """
         data = []
-        for i in self.driver.find_elements(By.XPATH, '//*[@class="css-1yrzrqq-cellContainerOverflow"]'):
+        for i in self.driver.find_elements(By.XPATH, '//*[@class="css-8fjwhi-row"]'):
             data.append(i.text.replace("\n", " ").split(" "))
         print("data=======", data)
-        # data: [['idk-mob-sdk-server-67847b6fdc-2rd4k'], ['0'], ['idk-mob-sdk-server-67847b6fdc-4ck49'], ['0'], ['idk-mob-sdk-server-67847b6fdc-flr6h'], ['0'], ['idk-mob-sdk-server-67847b6fdc-knbnr'], ['0'], ['idk-mob-sdk-server-67847b6fdc-knmnc'], ['0'], ['idk-mob-sdk-server-67847b6fdc-shzqr'], ['0'], ['idk-mob-sdk-server-67847b6fdc-z6jzn'], ['0'], ['idk-mob-sdk-server-67847b6fdc-zz69r'], ['0'], ['idk-oms-server-748d45cb44-ngzdh'], ['0'], ['idk-oms-wfe-5cbb694975-ndvmd'], ['0'], ['idk-oms-wfe-5cbb694975-pgrmx'], ['0'], ['idk-supplier-server-77c9c59dfb-c6tct'], ['0'], ['idk-supplier-server-77c9c59dfb-s4s64'], ['0'], ['idk-supplier-wfe-77f49cbbf7-wmqdt'], ['0'], ['idk-supplier-wfe-77f49cbbf7-z7d7v'], ['0'], ['idk-tsp-server-777699864f-75n9d'], ['0']]
-        numbers = [int(item[0]) for item in data if item[0].isdigit()]  # 提取所有数字并转换为整数
-        max_value = max(numbers) if numbers else None  # 获取最大值，防止空列表
+        max_value = max(data, key=lambda x: x[1])
         return max_value
+
+
+    def get_table_max_data_and_unit(self):
+        """
+        针对表格数据，并且数据带单位的情况
+        """
+        data = []
+        for i in self.driver.find_elements(By.XPATH, '//*[@class="css-8fjwhi-row"]'):
+            data.append(i.text.replace("\n", " ").split(" "))
+        """
+        data======= [['idk_base.ca_cert_info', '73.4', 'GiB'], ['idk_base.ca_sign_20240923', '23.7', 'GiB'], ['idk_base.mobile_device', '18.2', 'GiB'], ['idk_base.vehicle_user_key_his', '8.53', 'GiB'], ['idk_base.sys_log', '4.55', 'GiB'], ['idk_base.virtualkey_user', '4.31', 'GiB'], ['idk_base.bluetooth_device_logs', '1.94', 'GiB'], ['idk_base.vehicle_logs', '1.61', 'GiB'], ['idk_base.bluetooth_device', '1.25', 'GiB'], ['idk_base.vehicle_user_role', '1.20', 'GiB']]
+        """
+        list = []
+        for i in data:
+            if len(i) < 3:
+                continue
+            else:
+                title, value, unit = i[0], i[1], i[2]
+                if unit == 'GiB':
+                    value = float(value) * 1024
+                elif unit == 'MiB':
+                    value = float(value)
+                elif unit == 'KiB':
+                    value = float(value) / 1024
+            data[data.index(i)] = [title, value, 'MiB']  # 将转换后的值赋回数据中
+        print("data=======", data)
+        max_value = max(data, key=lambda x: x[1])
+        return max_value[1], max_value[2]
+
 
 
     def get_specified_data(self, text):

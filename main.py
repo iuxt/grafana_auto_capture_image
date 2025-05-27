@@ -110,18 +110,18 @@ if __name__ == "__main__":
             elif '磁盘使用率' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)
-            elif 'SDK内存占用率' in panel['title']:
+            elif 'SDK内存占用' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
-                save_result(panel['title'], data)
+                save_result('SDK服务POD内存占用量', data + 'GB')
             elif '重启次数统计' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_table_max_data()
-                save_result(panel['title'], data)
+                save_result(panel['title'], str(data[1]))
             elif 'MySQL连接数百分比' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)  
             elif '表占用空间概览Top10' in panel['title']:
-                data = GetMonitorData(dashboard.driver).get_table_max_data()
-                save_result(panel['title'], data)
+                data, unit = GetMonitorData(dashboard.driver).get_table_max_data_and_unit()
+                save_result(panel['title'], data + unit)
             elif '每分钟慢查询数量' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)

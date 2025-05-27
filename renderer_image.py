@@ -8,6 +8,7 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 import re
 import os
 import time
+from get_monitor_data import GetMonitorData
 
 
 class GrafanaDashboard:
@@ -163,11 +164,14 @@ if __name__ == "__main__":
     # date_from="2025-03-01T00:00:00.000Z",
     date_from = "now-1d"
     date_to = "now"
-    panel_id = "16"
+    panel_id = "2103"
     safe_filename = "系统负载.png"
 
     dashboard = GrafanaDashboard(url, username, password, uid )
     print(os.getenv("CHROME_DEBUG"))
     dashboard.init_chromium(debug=os.getenv("CHROME_DEBUG"))
     dashboard.render_panel(date_from, date_to, panel_id, safe_filename)
+    # 获取数据
+    data = GetMonitorData(dashboard.driver).get_table_max_data()
+    print("获取到的最大数据:", str(data[1]))
     dashboard.driver.quit()
