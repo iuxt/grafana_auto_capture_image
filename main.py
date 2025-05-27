@@ -101,13 +101,13 @@ if __name__ == "__main__":
                     f.write(title + '\t')
                     f.write(str(data) + '\n')
             
-            if '节点CPU使用率' in panel['title']:
+            if 'CPU使用率' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)
-            elif '节点内存使用率' in panel['title']:
+            elif '内存使用率' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)
-            elif '节点磁盘使用率' in panel['title']:
+            elif '磁盘使用率' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)
             elif 'SDK内存占用率' in panel['title']:
@@ -118,6 +118,9 @@ if __name__ == "__main__":
                 save_result(panel['title'], data)
             elif 'MySQL连接数百分比' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
+                save_result(panel['title'], data)  
+            elif '表占用空间概览Top10' in panel['title']:
+                data = GetMonitorData(dashboard.driver).get_table_max_data()
                 save_result(panel['title'], data)
             elif '每分钟慢查询数量' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
@@ -125,7 +128,7 @@ if __name__ == "__main__":
             elif 'Kafka消费组延迟' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)
-            elif 'Redis每秒操作数' in panel['title']:
+            elif '每秒操作数' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)
             else:
