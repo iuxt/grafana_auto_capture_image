@@ -121,7 +121,7 @@ if __name__ == "__main__":
                 save_result(panel['title'], data)  
             elif '表占用空间概览Top10' in panel['title']:
                 data, unit = GetMonitorData(dashboard.driver).get_table_max_data_and_unit()
-                save_result(panel['title'], data + unit)
+                save_result(panel['title'], str(data) + unit)
             elif '每分钟慢查询数量' in panel['title']:
                 data = GetMonitorData(dashboard.driver).get_max_data()
                 save_result(panel['title'], data)
