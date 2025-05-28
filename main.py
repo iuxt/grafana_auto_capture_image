@@ -9,6 +9,10 @@ from renderer_image import GrafanaDashboard
 from dotenv import load_dotenv
 from get_monitor_data import GetMonitorData
 import send_mail
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+
 
 class GrafanaApi:
     def __init__(self, url, api_key, uid, date_from, date_to):
@@ -145,7 +149,13 @@ if __name__ == "__main__":
     smtp_server = os.getenv('SMTP_SERVER')
     smtp_port = int(os.getenv('SMTP_PORT', 465))
     source_dir = "/tmp/output"
-    zip_filename = "/tmp/" + datetime.now().strftime('%Y-%m-%d') + '_' + sys.argv[1] +  ".zip"
+    
+    # 获取当前 UTC 时间
+    utc_now = datetime.now(ZoneInfo("UTC"))
+    # 将 UTC 时间转换为北京时间
+    beijing_time = utc_now.astimezone(ZoneInfo("Asia/Shanghai"))
+
+    zip_filename = "/tmp/" + beijing_time.strftime('%Y-%m-%d') + '_' + sys.argv[1] +  ".zip"
     with open('/tmp/' + sys.argv[1] + '-result.txt', 'r') as f:
         body = f.read()
         tmp_dict = {}
@@ -206,7 +216,7 @@ if __name__ == "__main__":
     <div class="container">
         <div class="header">
             <h2>巡检报告</h2>
-            <p class="timestamp">生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p class="timestamp">生成时间: {beijing_time.strftime('%Y-%m-%d %H:%M:%S')}</p>
         </div>
         
         <table class="monitor-table">
@@ -257,7 +267,6 @@ if __name__ == "__main__":
         # 完成HTML内容
         html_content += f"""            </tbody>
             </table>
-            <p class="timestamp">报告生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
         </div>
     </body>
     </html>"""
