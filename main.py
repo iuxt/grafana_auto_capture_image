@@ -64,7 +64,21 @@ class GrafanaApi:
 
 class Utils:
     @staticmethod
-    def get_html_content(filename):
+    def get_title(dashboard_id, datetime):
+        """
+        获取邮件标题
+        """
+        date_str = datetime.strftime('%Y年%m月')
+        if dashboard_id == 'w-service':
+            return '达布溜运维巡检报告 - ' + date_str
+        elif dashboard_id == 'c-service':
+            return '吃运维巡检报告 - ' + date_str
+        else:
+            return '巡检报告' + date_str
+        
+
+    @staticmethod
+    def get_html_content(filename,title):
         """
         从结果文件中生成HTML内容
         """
@@ -127,7 +141,7 @@ class Utils:
         <body>
             <div class="container">
                 <div class="header">
-                    <h2>巡检报告</h2>
+                    <h2>{title}</h2>
                     <p class="timestamp">生成时间: {beijing_time.strftime('%Y-%m-%d %H:%M:%S')}</p>
                 </div>
                 
@@ -289,6 +303,6 @@ if __name__ == "__main__":
     beijing_time = utc_now.astimezone(ZoneInfo("Asia/Shanghai"))
 
     zip_filename = "/tmp/" + beijing_time.strftime('%Y-%m-%d') + '_' + sys.argv[1] +  ".zip"
-
+    title = Utils.get_title(sys.argv[1], beijing_time)
     send_mail.zip_files(source_dir, zip_filename)
-    send_mail.send_email(zip_filename, to_email, subject='巡检报告', body=Utils.get_html_content(filename=result_file), from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
+    send_mail.send_email(zip_filename, to_email, subject=title, body=Utils.get_html_content(filename=result_file, title=title), from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
