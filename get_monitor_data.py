@@ -58,7 +58,8 @@ class GetMonitorData:
         for i in self.driver.find_elements(By.XPATH, '//*[@class="css-8fjwhi-row"]'):
             data.append(i.text.replace("\n", " ").split(" "))
         print("data=======", data)
-        max_value = max(data, key=lambda x: x[1])
+        filtered_data = [x for x in data if len(x) >= 2]
+        max_value = max(filtered_data, key=lambda x: x[1])
         return max_value
 
 
