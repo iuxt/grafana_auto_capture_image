@@ -6,7 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, ElementNotInteractableException
 from get_monitor_data import GetMonitorData
-
+import time
 
 
 chrome_options = Options()
@@ -43,9 +43,70 @@ username_input.send_keys("admin")
 password_input.send_keys("oPToNfQ859qpOV")
 login_button.click()
 
+
+
+
+def wait_for_element(xpath, timeout=60):
+    """等待元素可见，直到超时"""
+    try:
+        WebDriverWait(driver, timeout).until(
+            EC.presence_of_element_located((By.XPATH, xpath))
+        )
+    except Exception as e:
+        print(f"等待元素失败: {str(e)}")
+        return None
+
+
+def wait_for_element_disappear(xpath, timeout=60):
+    """等待元素消失，直到超时"""
+    try:
+        WebDriverWait(driver, timeout).until(
+            EC.invisibility_of_element_located((By.XPATH, xpath))
+        )
+    except Exception as e:
+        print(f"等待元素消失失败: {str(e)}")
+        return None
+
+
+def check_text_element(text):
+    """检查指定文本是否存在，存在返回True，不存在返回False"""
+    try:
+        driver.find_element(By.XPATH, f"//*[contains(text(), '{text}')]")
+        print(f"指定文本{text}存在")
+        return True
+    except Exception as e:
+        print(f"不存在指定文本:{text}")
+        return False
+
+
+def check_xpath_element(xpath):
+    """检查指定的xpath是否存在，存在返回True，不存在返回False"""
+    try:
+        driver.find_element(By.XPATH, f"'{xpath}'")
+        print(f"xpath存在：{xpath}")
+        return True
+    except Exception as e:
+        print(f"xpath不存在：{xpath}")
+        return False
+
+
 # 等待登录完成，第一个面板可见
-WebDriverWait(driver, 60).until(
-    EC.presence_of_element_located(
-        (By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
-    )
-)
+print("111")
+wait_for_element('//*[@class="css-itdw1b-panel-container"]')    
+print("222")
+
+
+url = f"https://sre-grafana.ingeek.com/d/gw-service/e4b89a-e58aa1-e79b91-e68ea7-e5a4a7-e79b98?orgId=1&from=now-24h&to=now&timezone=Asia%2FShanghai&refresh=0&viewPanel=panel-2082"
+driver.get(url)
+
+print("333")
+wait_for_element('//*[@class="css-itdw1b-panel-container"]')
+wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]', timeout=600)
+
+driver.save_screenshot("screenshot.png")
+
+
+for i in driver.find_elements(By.XPATH, '//*[@class="css-1xwmgv3"]'):
+    print(i.text)
+    print(type(i.text))
+    print(i.text.split("\n"))
