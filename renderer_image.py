@@ -34,12 +34,13 @@ class GrafanaDashboard:
             print("debug: true")
 
 
-        ser = Service(service_args=["--disable-build-check"])
-        # 设置ChromeDriver的路径
-        # ser.executable_path = r'/opt/homebrew/bin/chromedriver'
+        # 指定 ChromeDriver 的路径，就不会自动更新了
+        chrome_driver_path = "C:/Data/chromedriver-win64/chromedriver.exe"
+        service = Service(executable_path=chrome_driver_path)
+
 
         # 初始化浏览器
-        driver = webdriver.Chrome(options=chrome_options, service=ser)
+        driver = webdriver.Chrome(options=chrome_options, service=service)
         driver.set_window_size(1920, 1080)
 
         # 打开 Grafana 登录页面
