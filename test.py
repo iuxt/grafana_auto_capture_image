@@ -5,7 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, ElementNotInteractableException
-from monitor_data.get_monitor_data import GetMonitorData
+from monitor_data import table
 import time
 
 
@@ -91,22 +91,20 @@ def check_xpath_element(xpath):
 
 
 # 等待登录完成，第一个面板可见
-print("111")
 wait_for_element('//*[@class="css-itdw1b-panel-container"]')    
-print("222")
 
 
-url = f"https://sre-grafana.ingeek.com/d/gw-service/e4b89a-e58aa1-e79b91-e68ea7-e5a4a7-e79b98?orgId=1&from=now-24h&to=now&timezone=Asia%2FShanghai&refresh=0&viewPanel=panel-2082"
+url = f"https://sre-grafana.ingeek.com/d/gw-service/e4b89a-e58aa1-e79b91-e68ea7-e5a4a7-e79b98?orgId=1&from=now-24h&to=now&timezone=Asia%2FShanghai&refresh=0&viewPanel=panel-2103"
 driver.get(url)
 
-print("333")
 wait_for_element('//*[@class="css-itdw1b-panel-container"]')
 wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]', timeout=600)
 
 driver.save_screenshot("screenshot.png")
 
 
-for i in driver.find_elements(By.XPATH, '//*[@class="css-1xwmgv3"]'):
-    print(i.text)
-    print(type(i.text))
-    print(i.text.split("\n"))
+# 获取title
+for i in driver.find_elements(By.XPATH, '//*[@class="css-1y4sadw-row"]'):
+    data = i.text.replace("\n", " ").split(" ")
+print("data=======", data)
+
