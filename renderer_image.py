@@ -8,7 +8,7 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 import re
 import os
 import time
-from get_monitor_data import GetMonitorData
+from monitor_data.get_monitor_data import GetMonitorData
 
 
 class GrafanaDashboard:

@@ -7,7 +7,7 @@ import time
 import sys
 from renderer_image import GrafanaDashboard
 from dotenv import load_dotenv
-from get_monitor_data import GetMonitorData
+from monitor_data.get_monitor_data import GetMonitorData
 import send_mail
 from datetime import datetime
 from zoneinfo import ZoneInfo
