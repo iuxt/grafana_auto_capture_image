@@ -1,6 +1,8 @@
+from legend_table import LegendTable
+
 data = f"""Name Mean Max
 gw_elk1
-79.3% 79.5%
+70.3% 79.5%
 gw_elk2
 77.8% 78.1%
 gw_elk3
@@ -30,23 +32,10 @@ gw_kafka3
 
 
 
-lines = data.strip().split('\n')
-result = []
-
-line1 = lines[0].strip().split()
-print(line1)  # ['Name', 'Mean', 'Max']
-
-# 每两行一组（Name + Metrics）
-for i in range(1, len(lines), 2):
-    name = lines[i].strip()
-    data1, data2 = lines[i+1].strip().split()
-    result.append({
-        "Name": name,
-        line1[1]: data1,
-        line1[2]: data2
-    })
-
-print(result)
+legend_table = LegendTable(data)
+parsed_data = legend_table.parse()
+print(legend_table.get_mean_max())
+print(parsed_data)
 
 
 """
