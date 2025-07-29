@@ -1,0 +1,50 @@
+原始数据：
+
+Name Max Mean
+idk-mob-sdk-server-69d8dd8d9c-6k94f
+2.44 GB 2.44 GB
+idk-mob-sdk-server-69d8dd8d9c-ck6p2
+2.53 GB 2.52 GB
+idk-mob-sdk-server-69d8dd8d9c-l9n7k
+2.45 GB 2.45 GB
+idk-mob-sdk-server-69d8dd8d9c-ntw7t
+2.44 GB 2.43 GB
+idk-mob-sdk-server-69d8dd8d9c-p6rlv
+2.46 GB 2.45 GB
+idk-mob-sdk-server-69d8dd8d9c-sf4zx
+2.46 GB 2.46 GB
+idk-mob-sdk-server-69d8dd8d9c-w2qp2
+2.48 GB 2.47 GB
+
+
+parse 后
+[
+    {'Name': 'idk-mob-sdk-server-69d8dd8d9c-6k94f', 'Max': '2.44GB', 'Mean': '2.44GB'}, 
+    {'Name': 'idk-mob-sdk-server-69d8dd8d9c-ck6p2', 'Max': '2.53GB', 'Mean': '2.52GB'}, 
+    {'Name': 'idk-mob-sdk-server-69d8dd8d9c-l9n7k', 'Max': '2.45GB', 'Mean': '2.45GB'}, 
+    {'Name': 'idk-mob-sdk-server-69d8dd8d9c-ntw7t', 'Max': '2.44GB', 'Mean': '2.43GB'}, 
+    {'Name': 'idk-mob-sdk-server-69d8dd8d9c-p6rlv', 'Max': '2.46GB', 'Mean': '2.45GB'}, 
+    {'Name': 'idk-mob-sdk-server-69d8dd8d9c-sf4zx', 'Max': '2.46GB', 'Mean': '2.46GB'}, 
+    {'Name': 'idk-mob-sdk-server-69d8dd8d9c-w2qp2', 'Max': '2.48GB', 'Mean': '2.47GB'}
+]
+
+取最大值
+{'Name': 'idk-mob-sdk-server-69d8dd8d9c-ck6p2', 'Max': '2.53GB', 'Mean': '2.52GB'}
+
+
+
+原始数据：
+Name Mean Max
+gw_elk1
+79.3% 79.5%
+gw_elk2
+77.8% 78.1%
+
+parse 后   
+[
+    {"Name": "gw_elk1", "Mean": "79.3%", "Max": "79.5%"},
+    {"Name": "gw_elk2", "Mean": "77.8%", "Max": "78.1%"}
+]
+
+取最大值
+{"Name": "gw_elk2", "Mean": "77.8%", "Max": "78.1%"}
