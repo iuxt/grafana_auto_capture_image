@@ -179,6 +179,16 @@ class GrafanaDashboard:
             save_data.insert_result_to_file(panel_name + "平均最大值", legend_table.get_mean_max())
         elif panel_name in ['重启次数统计', '表占用空间概览Top10']:
             print("table 类型  -------------", panel_name)
+            # 获取title table类型的原始数据
+            for i in self.driver.find_elements(By.XPATH, '//*[@class="css-rzpihd"]'): # 数据不带标题
+                data = i.text
+            for i in self.driver.find_elements(By.XPATH, '//*[@class="css-1y4sadw-row"]'): # 标题
+                title = i.text
+            print("data=======", data)
+            print("title=======", title)
+            table = Table(title, data)
+            table_json_data = table.parse_table_data()
+            print("Parsed Data:", table_json_data)
 
 
 if __name__ == "__main__":

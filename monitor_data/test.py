@@ -1,47 +1,75 @@
-from legend_table import LegendTable
+import json
 
-data = f"""Name Mean Max
-gw_elk1
-70.3% 79.5%
-gw_elk2
-77.8% 78.1%
-gw_elk3
-77.8% 78.0%
-gw_k8s_node_4
-75.3% 75.7%
-gw_k8s_node_8
-41.5% 47.4%
-gw_k8s_node_7
-46.5% 46.8%
-gw_k8s_node_1
-41.5% 41.8%
-gw_k8s_node_3
-39.1% 40.0%
-gw_kafka2
-39.0% 39.2%
-gw_k8s_node_2
-34.5% 35.0%
-gw_kafka1
-27.7% 27.9%
-gw_k8s_node_5
-24.9% 25.2%
-gw_k8s_node_6
-24.6% 25.0%
-gw_kafka3
-24.4% 24.6%"""
+def parse_table_data(title: str, data: str) -> list:
+    """
+    将表格数据转换为JSON格式
+    
+    :param title: 标题行，包含列名
+    :param data: 数据内容
+    :return: JSON格式的数据列表
+    """
+    # 提取列名
+    headers = [line.strip() for line in title.strip().split('\n') if line.strip()]
+    
+    # 处理数据行
+    lines = [line.strip() for line in data.strip().split('\n') if line.strip()]
+    
+    # 计算每组数据的行数 (列数)
+    group_size = len(headers)
+    if group_size == 0:
+        return []
+    
+    result = []
+    for i in range(0, len(lines), group_size):
+        # 确保有足够的数据行
+        if i + group_size - 1 >= len(lines):
+            break
+            
+        # 创建每个数据项
+        item = {}
+        for j in range(group_size):
+            # 尝试将数字转换为int/float
+            value = lines[i + j]
+            if value.isdigit():
+                value = int(value)
+            else:
+                try:
+                    value = float(value)
+                except ValueError:
+                    pass
+            
+            item[headers[j]] = value
+        
+        result.append(item)
+    
+    return result
 
-
-
-legend_table = LegendTable(data)
-parsed_data = legend_table.parse()
-print(legend_table.get_mean_max())
-print(parsed_data)
-
-
+# 示例数据
+title = """Time
+Pod名
+时间范围内重启次q数
 """
-[
-    {"Name": "gw_elk1", "Mean": "79.3%", "Max": "79.5%"},
-    {"Name": "gw_elk2", "Mean": "77.8%", "Max": "78.1%"},
-    {"Name": "gw_k8s_node_4", "Mean": "75.3%", "Max": "75.7%"}
-]
+
+data = """
+2025-07-29 23:32:09.486
+idk-mob-sdk-server-69d8dd8d9c-6k94f
+0
+2025-07-29 23:32:09.486
+idk-mob-sdk-server-69d8dd8d9c-ck6p2
+0
+2025-07-29 23:32:09.486
+idk-mob-sdk-server-69d8dd8d9c-l9n7k
+0
+2025-07-29 23:32:09.486
+idk-mob-sdk-server-69d8dd8d9c-ntw7t
+0
+2025-07-29 23:32:09.486
+mysql-exporter-76c6cc6b49-ddts4
+0
 """
+
+# 转换数据
+json_data = parse_table_data(title, data)
+
+# 输出结果
+print(json.dumps(json_data, indent=2, ensure_ascii=False))

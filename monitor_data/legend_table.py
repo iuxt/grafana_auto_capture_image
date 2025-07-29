@@ -1,166 +1,165 @@
 import re
+from typing import List, Dict, Optional, Union
 
 class LegendTable:
-    def __init__(self, data):
+    def __init__(self, data: str):
         self.data = data
+        self._unit_patterns = {
+            'percentage': r'%',
+            'full_units': r'\s+(GiB|GB|MiB|MB|KiB|KB)',
+            'short_units': r'\s+([KMG])',
+            'time_units': r'\s*(ms|s)'
+        }
 
-    def parse(self):
-        """
-        input:
-        Name Mean Max
+    def parse(self) -> List[Dict[str, str]]:
+        """解析表格数据为结构化格式"""
+        if not self.data.strip():
+            return []
+
+        lines = self.data.strip().split('\n')
+        headers = lines[0].strip().split()
+        
+        # 确定数据格式类型
+        data_type = self._detect_data_type(lines)
+        
+        result = []
+        for i in range(1, len(lines), 2):
+            if i + 1 >= len(lines):
+                break
+                
+            name = lines[i].strip()
+            metrics = lines[i + 1].strip()
+            
+            # 根据数据类型处理指标
+            processed_metrics = self._process_metrics(metrics, data_type)
+            
+            if len(headers) == 3 and len(processed_metrics) >= 2:
+                result.append({
+                    "Name": name,
+                    headers[1]: processed_metrics[0],
+                    headers[2]: processed_metrics[1]
+                })
+        
+        return result
+
+    def _detect_data_type(self, lines: List[str]) -> str:
+        """检测数据类型"""
+        sample_line = ' '.join(lines[1:3]) if len(lines) >= 3 else ''
+        
+        if '%' in sample_line:
+            return 'percentage'
+        elif re.search(self._unit_patterns['full_units'], sample_line):
+            return 'full_units'
+        elif re.search(self._unit_patterns['short_units'], sample_line):
+            return 'short_units'
+        elif re.search(self._unit_patterns['time_units'], sample_line):
+            return 'time_units'
+        else:
+            return 'plain'
+
+    def _process_metrics(self, metrics: str, data_type: str) -> List[str]:
+        """根据数据类型处理指标字符串"""
+        if data_type == 'percentage':
+            return metrics.split()
+        elif data_type == 'full_units':
+            return re.sub(self._unit_patterns['full_units'], r'\1', metrics).split()
+        elif data_type == 'short_units':
+            return re.sub(self._unit_patterns['short_units'], r'\1', metrics).split()
+        else:
+            return metrics.split()
+
+    def convert_to_comparable(self, value: str) -> float:
+        """将不同单位的数值转换为可比较的浮点数"""
+        if not value:
+            return 0.0
+            
+        value = value.strip()
+        
+        # 处理百分比
+        if '%' in value:
+            return float(value.replace('%', ''))
+        
+        # 处理存储单位
+        unit_multipliers = {
+            'GiB': 1024**3,
+            'GB': 1000**3,
+            'MiB': 1024**2,
+            'MB': 1000**2,
+            'KiB': 1024,
+            'KB': 1000
+        }
+        
+        for unit, multiplier in unit_multipliers.items():
+            if unit in value:
+                return float(value.replace(unit, '')) * multiplier
+        
+        # 处理简写单位
+        short_units = {
+            'G': 1024**3,
+            'M': 1024**2,
+            'K': 1024
+        }
+        
+        for unit, multiplier in short_units.items():
+            if unit in value:
+                return float(value.replace(unit, '')) * multiplier
+        
+        # 处理时间单位
+        if 'ms' in value:
+            return float(value.replace('ms', '')) / 1000
+        elif 's' in value:
+            return float(value.replace('s', ''))
+        
+        # 默认尝试转换为浮点数
+        try:
+            return float(value)
+        except ValueError:
+            return 0.0
+
+    def get_max(self, field: str = "Max") -> Optional[Dict[str, str]]:
+        """获取指定字段的最大值"""
+        parsed_data = self.parse()
+        if not parsed_data or field not in parsed_data[0]:
+            return None
+            
+        return max(parsed_data, key=lambda x: self.convert_to_comparable(x[field]))
+
+    def get_mean_max(self) -> Optional[Dict[str, str]]:
+        """获取Mean字段的最大值"""
+        return self.get_max("Mean")
+
+
+if __name__ == "__main__":
+    test_cases = [
+        """Name Mean Max
         gw_elk1
         79.3% 79.5%
         gw_elk2
-        77.8% 78.1%
+        77.8% 78.1%""",
         
-        output:
-        [
-            {"Name": "gw_elk1", "Mean": "79.3%", "Max": "79.5%"},
-            {"Name": "gw_elk2", "Mean": "77.8%", "Max": "78.1%"}
-        ]
-        """
-
-        if '%' in self.data:
-            lines = self.data.strip().split('\n')
-            result = []
-
-            # Extract header
-            headers = lines[0].strip().split()
-
-            # Process each pair of lines
-            for i in range(1, len(lines), 2):
-                name = lines[i].strip()
-                metrics = lines[i + 1].strip().split()
-                result.append({
-                    "Name": name,
-                    headers[1]: metrics[0],
-                    headers[2]: metrics[1]
-                })
-
-        elif ' GiB' in self.data or ' GB' in self.data or ' MiB' in self.data or ' MB' in self.data or ' KiB' in self.data or ' KB' in self.data:
-            result = []
-            lines = self.data.strip().split('\n')
-            headers = lines[0].strip().split()
-
-            # Process each pair of lines
-            for i in range(1, len(lines), 2):
-                name = lines[i].strip()
-                metrics = lines[i + 1].strip()
-                fixed_s = re.sub(r'\s+(GB|GiB|MB)', r'\1', metrics).split()
-                result.append({
-                    "Name": name,
-                    headers[1]: fixed_s[0],
-                    headers[2]: fixed_s[1]
-                })
-        elif ' K' in self.data:
-            result = []
-            lines = self.data.strip().split('\n')
-            headers = lines[0].strip().split()
-
-            # Process each pair of lines
-            for i in range(1, len(lines), 2):
-                name = lines[i].strip()
-                metrics = lines[i + 1].strip()
-                fixed_s = re.sub(r'\s+(K|M|G)', r'\1', metrics).split()
-                result.append({
-                    "Name": name,
-                    headers[1]: fixed_s[0],
-                    headers[2]: fixed_s[1]
-                })
-        else:
-            lines = self.data.strip().split('\n')
-            result = []
-
-            # Extract header
-            headers = lines[0].strip().split()
-
-            # Process each pair of lines
-            for i in range(1, len(lines), 2):
-                name = lines[i].strip()
-                metrics = lines[i + 1].strip().split()
-                result.append({
-                    "Name": name,
-                    headers[1]: metrics[0],
-                    headers[2]: metrics[1]
-                })
-
-        return result
-
-    def convert_to_comparable(self, value):
-        """将不同单位的数值转换为可比较的浮点数"""
-        if '%' in value:
-            return float(value.replace('%', ''))
-        elif 'GiB' in value or 'GB' in value:
-            return float(value.replace('GiB', '').replace('GB', '')) * 1024
-        elif 'MiB' in value or 'MB' in value:
-            return float(value.replace('MiB', '').replace('MB', ''))
-        elif 'KiB' in value or 'KB' in value:
-            return float(value.replace('KiB', '').replace('KB', '')) / 1024
-        elif 'K' in value or 'M' in value or 'G' in value:
-            # 处理 K, M, G 单位
-            if 'K' in value:
-                return float(value.replace('K', '')) * 1024
-            elif 'M' in value:
-                return float(value.replace('M', '')) * 1024 * 1024
-            elif 'G' in value:
-                return float(value.replace('G', '')) * 1024 * 1024 * 1024
-        elif 's' in value:
-            # 处理秒和毫秒
-            if 'ms' in value:
-                return float(value.replace('ms', '')) / 1000
-            return float(value.replace('s', ''))
-        else:
-            # 默认尝试直接转换为浮点数
-            try:
-                return float(value)
-            except ValueError:
-                return 0.0  # 无法转换的情况返回0
-            
-
-    def get_max(self):
-        """
-        获取最大值
-        return:
-        {'Name': 'gw_elk1', 'Mean': '79.3%', 'Max': '79.5%'}
-        """
-        parsed_data = self.parse()
-        if not parsed_data:
-            return None
+        """Name Mean Max
+        disk1
+        1.2 GiB 2.4 GiB
+        disk2
+        512 MiB 768 MiB""",
         
-        # 找到Max值最大的元素
-        max_value = max(parsed_data, key=lambda x: self.convert_to_comparable(x["Max"]))
+        """Name Mean Max
+        service1
+        2.24 K 150ms
+        service2
+        1.5 K 230ms""",
         
-        return max_value
+        """Name Mean Max
+        item1
+        100 200
+        item2
+        150 180"""
+    ]
     
-
-    def get_mean_max(self):
-        """
-        获取 Mean 的最大值
-        return:
-        {'Name': 'gw_elk2', 'Mean': '77.8%', 'Max': '78.1%'}
-        """
-        parsed_data = self.parse()
-        if not parsed_data:
-            return None
-        
-        # 找到Max值最大的元素
-        max_value = max(parsed_data, key=lambda x: self.convert_to_comparable(x["Mean"]))
-        
-        return max_value
-    
-    
-
-if __name__ == "__main__":
-    data = f"""Name Mean Max
-    k8s_group (topic: ingress-k8s)
-    971 2.24 K
-    user_monitor_point_group (topic: user_monitor_point)
-    49.4 144"""
-
-
-
-    legend_table = LegendTable(data)
-    parsed_data = legend_table.parse()
-    print(parsed_data)
-    print("MAX ====================", legend_table.get_max())
-    print("Mean max ===============", legend_table.get_mean_max())
+    for i, data in enumerate(test_cases, 1):
+        print(f"\n=== Test Case {i} ===")
+        table = LegendTable(data)
+        parsed = table.parse()
+        print("Parsed Data:", parsed)
+        print("Max Value:", table.get_max())
+        print("Mean Max:", table.get_mean_max())
