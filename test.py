@@ -94,8 +94,8 @@ def check_xpath_element(xpath):
 wait_for_element('//*[@class="css-itdw1b-panel-container"]')    
 
 
-# url = f"https://sre-grafana.ingeek.com/d/gw-service/e4b89a-e58aa1-e79b91-e68ea7-e5a4a7-e79b98?orgId=1&from=now-24h&to=now&timezone=Asia%2FShanghai&refresh=0&viewPanel=panel-2081" # CPU使用率%
-url = f"https://sre-grafana.ingeek.com/d/gw-service/e4b89a-e58aa1-e79b91-e68ea7-e5a4a7-e79b98?orgId=1&from=now-24h&to=now&timezone=Asia%2FShanghai&refresh=0&viewPanel=panel-2102" # SDK内存 GB
+url = f"https://sre-grafana.ingeek.com/d/gw-service/e4b89a-e58aa1-e79b91-e68ea7-e5a4a7-e79b98?orgId=1&from=now-24h&to=now&timezone=Asia%2FShanghai&refresh=0&viewPanel=panel-2097" # CPU使用率%
+# url = f"https://sre-grafana.ingeek.com/d/gw-service/e4b89a-e58aa1-e79b91-e68ea7-e5a4a7-e79b98?orgId=1&from=now-24h&to=now&timezone=Asia%2FShanghai&refresh=0&viewPanel=panel-2102" # SDK内存 GB
 driver.get(url)
 
 wait_for_element('//*[@class="css-itdw1b-panel-container"]')
@@ -112,4 +112,4 @@ print("data=======", data)
 # 初始化数据成json格式
 legend_table = legend_table.LegendTable(data)
 print("Parsed Data:", legend_table.parse())
-print(legend_table.get_max_value())
+print(legend_table.get_max())

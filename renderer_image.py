@@ -8,8 +8,9 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 import re
 import os
 import time
-from monitor_data.get_monitor_data import GetMonitorData
-
+from monitor_data.legend_table import LegendTable
+from monitor_data.table import Table
+from monitor_data.save_data import SaveData
 
 class GrafanaDashboard:
     def __init__(self, url, username, password, uid):
@@ -114,7 +115,14 @@ class GrafanaDashboard:
             return False
 
 
-    def render_panel(self, date_from, date_to, panel_id, safe_filename, max_retries=3, retry_interval=5):
+    def render_panel(self, date_from, date_to, panel_id, row_value, panel_name, max_retries=3, retry_interval=5):
+        print(f"Processing panel: {panel_name}")
+        os.makedirs('/tmp/output/' + row_value + '/', exist_ok=True)
+        safe_filename = '/tmp/output/' + row_value + '/' + re.sub(r'[\\/*?:"<>|]', '_', panel_name) + '.png'
+        if os.path.exists(safe_filename):
+            print(f"File {safe_filename} already exists, skipping...")
+            return
+
         # 转到某个仪表板页面
         dashboard_url = self.url + f"/d/{self.uid}/?orgId=1&from={date_from}&to={date_to}&timezone=browser&viewPanel=panel-{panel_id}"
         self.driver.get(dashboard_url)
@@ -152,6 +160,25 @@ class GrafanaDashboard:
         panel.screenshot(safe_filename)
         print(f"截图保存到：{safe_filename}")
 
+        # 保存数据到结果文件
+        if panel_name in ['CPU使用率', '内存使用率', '磁盘使用率', 'SDK内存占用', 'MySQL连接数百分比', '每分钟慢查询数量', 'Kafka消费组延迟', '每秒操作数']:
+            # 获取title legend table类型的原始数据
+            for i in self.driver.find_elements(By.XPATH, '//*[@class="css-5cr14k"]'):
+                org_data = i.text
+            print("org_data=======", org_data)
+
+            # 初始化数据成json格式
+            legend_table = LegendTable(org_data)
+            print("Parsed Data:", legend_table.parse())
+            print("最大值   ============",legend_table.get_max())
+            print("平均最大值============",legend_table.get_mean_max())
+
+            # 保存数据到结果文件
+            save_data = SaveData(filename="result.txt")
+            save_data.insert_result_to_file(panel_name + "最大值", legend_table.get_max())
+            save_data.insert_result_to_file(panel_name + "平均最大值", legend_table.get_mean_max())
+        elif panel_name in ['重启次数统计', '表占用空间概览Top10']:
+            print("table 类型  -------------", panel_name)
 
 
 if __name__ == "__main__":
@@ -165,14 +192,29 @@ if __name__ == "__main__":
     # date_from="2025-03-01T00:00:00.000Z",
     date_from = "now-1d"
     date_to = "now"
-    panel_id = "2103"
+    panel_id = "23763571999"
     safe_filename = "系统负载.png"
 
     dashboard = GrafanaDashboard(url, username, password, uid )
     print(os.getenv("CHROME_DEBUG"))
     dashboard.init_chromium(debug=os.getenv("CHROME_DEBUG"))
     dashboard.render_panel(date_from, date_to, panel_id, safe_filename)
-    # 获取数据
-    data = GetMonitorData(dashboard.driver).get_table_max_data()
-    print("获取到的最大数据:", str(data[1]))
+
+
+    # 获取title legend table类型的原始数据
+    for i in dashboard.driver.find_elements(By.XPATH, '//*[@class="css-5cr14k"]'):
+        org_data = i.text
+    print("org_data=======", org_data)
+
+    # 初始化数据成json格式
+    legend_table = LegendTable(org_data)
+    print("Parsed Data:", legend_table.parse())
+    print("最大值   ============",legend_table.get_max())
+    print("平均最大值============",legend_table.get_mean_max())
+
+    # 保存数据到结果文件
+    save_data = SaveData(filename="result.txt")
+    save_data.insert_result_to_file("最大值", legend_table.get_max())
+    save_data.insert_result_to_file("平均最大值", legend_table.get_mean_max())
+
     dashboard.driver.quit()

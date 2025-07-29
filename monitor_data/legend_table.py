@@ -37,7 +37,7 @@ class LegendTable:
                     headers[2]: metrics[1]
                 })
 
-        elif 'GiB' in self.data or 'GB' in self.data or 'MiB' in self.data or 'MB' in self.data or 'KiB' in self.data or 'KB' in self.data:
+        elif ' GiB' in self.data or ' GB' in self.data or ' MiB' in self.data or ' MB' in self.data or ' KiB' in self.data or ' KB' in self.data:
             result = []
             lines = self.data.strip().split('\n')
             headers = lines[0].strip().split()
@@ -52,6 +52,37 @@ class LegendTable:
                     headers[1]: fixed_s[0],
                     headers[2]: fixed_s[1]
                 })
+        elif ' K' in self.data:
+            result = []
+            lines = self.data.strip().split('\n')
+            headers = lines[0].strip().split()
+
+            # Process each pair of lines
+            for i in range(1, len(lines), 2):
+                name = lines[i].strip()
+                metrics = lines[i + 1].strip()
+                fixed_s = re.sub(r'\s+(K|M|G)', r'\1', metrics).split()
+                result.append({
+                    "Name": name,
+                    headers[1]: fixed_s[0],
+                    headers[2]: fixed_s[1]
+                })
+        else:
+            lines = self.data.strip().split('\n')
+            result = []
+
+            # Extract header
+            headers = lines[0].strip().split()
+
+            # Process each pair of lines
+            for i in range(1, len(lines), 2):
+                name = lines[i].strip()
+                metrics = lines[i + 1].strip().split()
+                result.append({
+                    "Name": name,
+                    headers[1]: metrics[0],
+                    headers[2]: metrics[1]
+                })
 
         return result
 
@@ -65,6 +96,14 @@ class LegendTable:
             return float(value.replace('MiB', '').replace('MB', ''))
         elif 'KiB' in value or 'KB' in value:
             return float(value.replace('KiB', '').replace('KB', '')) / 1024
+        elif 'K' in value or 'M' in value or 'G' in value:
+            # 处理 K, M, G 单位
+            if 'K' in value:
+                return float(value.replace('K', '')) * 1024
+            elif 'M' in value:
+                return float(value.replace('M', '')) * 1024 * 1024
+            elif 'G' in value:
+                return float(value.replace('G', '')) * 1024 * 1024 * 1024
         elif 's' in value:
             # 处理秒和毫秒
             if 'ms' in value:
@@ -112,21 +151,11 @@ class LegendTable:
     
 
 if __name__ == "__main__":
-    data = f"""Name Max Mean
-    idk-mob-sdk-server-69d8dd8d9c-6k94f
-    0.99 GB 2.44 GB
-    idk-mob-sdk-server-69d8dd8d9c-ck6p2
-    2.53 GB 2.52 GB
-    idk-mob-sdk-server-69d8dd8d9c-l9n7k
-    2.45 GB 9 GB
-    idk-mob-sdk-server-69d8dd8d9c-ntw7t
-    2.44 GB 10000 MB
-    idk-mob-sdk-server-69d8dd8d9c-p6rlv
-    2.46 GB 2.45 GB
-    idk-mob-sdk-server-69d8dd8d9c-sf4zx
-    8.88 GB 2.46 GB
-    idk-mob-sdk-server-69d8dd8d9c-w2qp2
-    10 GB 2.47 GB"""
+    data = f"""Name Mean Max
+    k8s_group (topic: ingress-k8s)
+    971 2.24 K
+    user_monitor_point_group (topic: user_monitor_point)
+    49.4 144"""
 
 
 
