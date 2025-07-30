@@ -190,6 +190,11 @@ class GrafanaDashboard:
             table_json_data = table.parse_table_data()
             print("Parsed Data:", table_json_data)
 
+            # 保存数据到结果文件
+            save_data = SaveData(filename="result.txt")
+            save_data.insert_result_to_file(panel_name + "最大值", table.get_table_max())
+
+
 
 if __name__ == "__main__":
     # 示例用法
