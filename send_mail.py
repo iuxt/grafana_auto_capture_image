@@ -29,7 +29,6 @@ def send_email(zip_filename, to_email, subject=None, body=None, from_email=None,
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'html', 'utf-8'))
 
-    print(zip_filename, to_email, subject, body, from_email, password, smtp_server, smtp_port)
     # 添加附件
     part = MIMEBase('application', 'octet-stream')
     with open(zip_filename, "rb") as file:
