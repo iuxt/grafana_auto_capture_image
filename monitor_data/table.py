@@ -1,105 +1,146 @@
+import re
+from typing import Union, List, Dict
+
 class Table:
-    def __init__(self, title, data):
+    def __init__(self, title: str, data: str):
         self.title = title
         self.data = data
         headers = [line.strip() for line in self.title.strip().split('\n') if line.strip()]
         self.headers = headers
 
-
-    def parse_table_data(self) -> list:
+    def _convert_to_mb(self, value: str) -> float:
         """
-        将表格数据转换为JSON格式
+        将带单位的数据转换为MB，区分二进制和十进制单位
         
-        :param title: 标题行，包含列名
-        :param data: 数据内容
-        :return: JSON格式的数据列表
-        """        
-        # 处理数据行
-        lines = [line.strip() for line in self.data.strip().split('\n') if line.strip()]
+        :param value: 带单位的字符串值，如"1.5 GiB"或"2 GB"
+        :return: 转换为MB后的数值
+        """
+        # 正则匹配数值和单位
+        match = re.match(r'^([\d.]+)\s*(KB|KiB|MB|MiB|GB|GiB|TB|TiB)?$', value.strip(), re.IGNORECASE)
+        if not match:
+            try:
+                return float(value)
+            except ValueError:
+                return 0.0
 
-        # 计算每组数据的行数 (列数)
+        number = float(match.group(1))
+        unit = (match.group(2) or '').upper()
+
+        # 二进制单位 (基于1024)
+        if unit == 'KIB':
+            return number / 1024
+        elif unit == 'MIB':
+            return number
+        elif unit == 'GIB':
+            return number * 1024
+        elif unit == 'TIB':
+            return number * 1024 * 1024
+        
+        # 十进制单位 (基于1000)
+        elif unit == 'KB':
+            return number / 1000
+        elif unit == 'MB':
+            return number
+        elif unit == 'GB':
+            return number * 1000
+        elif unit == 'TB':
+            return number * 1000 * 1000
+        
+        # 无单位，默认为MB
+        return number
+
+    def parse_table_data(self) -> List[Dict]:
+        """
+        将表格数据转换为JSON格式，并统一转换为MB
+        
+        :return: JSON格式的数据列表，所有大小单位已转换为MB
+        """
+        lines = [line.strip() for line in self.data.strip().split('\n') if line.strip()]
         group_size = len(self.headers)
         if group_size == 0:
             return []
         
         result = []
         for i in range(0, len(lines), group_size):
-            # 确保有足够的数据行
             if i + group_size - 1 >= len(lines):
                 break
                 
-            # 创建每个数据项
             item = {}
             for j in range(group_size):
-                # 尝试将数字转换为int/float
                 value = lines[i + j]
-                if value.isdigit():
-                    value = int(value)
-                else:
-                    try:
-                        value = float(value)
-                    except ValueError:
-                        pass
                 
-                item[self.headers[j]] = value
+                # 尝试转换为数值
+                try:
+                    if any(unit in value.upper() for unit in ['KB', 'KIB', 'MB', 'MIB', 'GB', 'GIB', 'TB', 'TIB']):
+                        # 如果是带单位的值，转换为MB
+                        item[self.headers[j]] = self._convert_to_mb(value)
+                    elif '.' in value:
+                        item[self.headers[j]] = float(value)
+                    else:
+                        item[self.headers[j]] = int(value)
+                except ValueError:
+                    item[self.headers[j]] = value
             
             result.append(item)
         
         return result
 
-
-    def get_table_max(self) -> int:
+    def get_table_max(self, column_name: str = None) -> float:
         """
-        获取表格数据中的最大值
+        获取表格数据中指定列的最大值(单位MB)
         
-        :return: 最大值
+        :param column_name: 列名，如果为None则使用最后一列
+        :return: 最大值(MB)，保留2位小数
         """
         json_data = self.parse_table_data()
         if not json_data:
-            return 0
+            return 0.0
         
-        # 假设我们要获取某个特定列的最大值，这里以"时间范围内重启次数"为例
-        max_value = max(item[self.headers[-1]] for item in json_data if self.headers[-1] in item)
-
-        if isinstance(max_value, str):
-            if "GB" in max_value or "GiB" in max_value:
-                # 如果是字符串形式的GB，转换为数字
-                max_value = float(max_value.replace("GB", "").replace("GiB", "").strip()) * 1024
-            elif "KB" in max_value or "KiB" in max_value:
-                # 如果是字符串形式的KB，转换为数字
-                max_value = float(max_value.replace("KB", "").replace("KiB", "").strip()) / 1024
-        return max_value
+        target_column = column_name if column_name else self.headers[-1]
+        
+        values = []
+        for item in json_data:
+            if target_column in item and isinstance(item[target_column], (int, float)):
+                values.append(item[target_column])
+        
+        return round(max(values), 2) if values else 0.0
 
 
 if __name__ == "__main__":
-    # 示例数据
-    title = """Time
-    Pod名
-    时间范围内重启次数
+    # 测试数据包含各种单位
+    title = """Field
+    占用空间
     """
 
     data = """
-    2025-07-29 23:32:09.486
-    idk-mob-sdk-server-69d8dd8d9c-6k94f
-    0
-    2025-07-29 23:32:09.486
-    idk-mob-sdk-server-69d8dd8d9c-ck6p2
-    0
-    2025-07-29 23:32:09.486
-    idk-mob-sdk-server-69d8dd8d9c-l9n7k
-    9
-    2025-07-29 23:32:09.486
-    idk-mob-sdk-server-69d8dd8d9c-ntw7t
-    0
-    2025-07-29 23:32:09.486
-    mysql-exporter-76c6cc6b49-ddts4
-    0
+    idk_base.ca_cert_info
+    100.0 GiB
+    idk_base.ca_sign_20240923
+    23.7 GB
+    idk_base.mobile_device
+    18.8 GiB
+    idk_base.vehicle_user_key_his
+    10.4 GB
+    idk_base.virtualkey_user
+    4.56 GiB
+    idk_base.sys_log
+    4550 MiB
+    idk_base.bluetooth_device_logs
+    1.94 GiB
+    idk_base.vehicle_logs
+    1610 MiB
+    idk_base.bluetooth_device
+    1.33 GB
+    idk_base.vehicle_user_role
+    1.24 GiB
     """
     table = Table(title, data)
-    # 转换数据
+    
+    # 转换数据并打印
     json_data = table.parse_table_data()
     import json
-    # 输出结果
     print(json.dumps(json_data, indent=2, ensure_ascii=False))
-    max_restarts = table.get_table_max()
-    print("最大重启次数:", max_restarts)
+    
+    # 获取最大存储空间
+    max_space = table.get_table_max("占用空间")
+    print(f"\n最大存储空间: {max_space:.2f} MB")
