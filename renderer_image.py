@@ -166,6 +166,7 @@ class GrafanaDashboard:
             for i in self.driver.find_elements(By.XPATH, '//*[@class="css-5cr14k"]'):
                 org_data = i.text
             print("org_data=======", org_data)
+            print("legend table 类型  -------------", panel_name)
 
             # 初始化数据成json格式
             legend_table = LegendTable(org_data)
@@ -173,10 +174,10 @@ class GrafanaDashboard:
             print("最大值   ============",legend_table.get_max())
             print("平均最大值============",legend_table.get_mean_max())
 
-            # 保存数据到结果文件
-            save_data = SaveData(filename="result.txt")
-            save_data.insert_result_to_file(panel_name + "最大值", legend_table.get_max())
-            save_data.insert_result_to_file(panel_name + "平均最大值", legend_table.get_mean_max())
+            # 保存数据到结果
+            save_data = SaveData()
+            print("写入数据库的数据：", legend_table.get_max_numeric(), legend_table.get_mean_max_numeric())
+            save_data.pymysql_write(manufacturer="xxx",name=panel_name, max_value=legend_table.get_max_numeric(), mean_max=legend_table.get_mean_max_numeric())
         elif panel_name in ['重启次数统计', '表占用空间概览Top10']:
             print("table 类型  -------------", panel_name)
             # 获取title table类型的原始数据
@@ -191,8 +192,9 @@ class GrafanaDashboard:
             print("Parsed Data:", table_json_data)
 
             # 保存数据到结果文件
-            save_data = SaveData(filename="result.txt")
-            save_data.insert_result_to_file(panel_name + "最大值", table.get_table_max())
+            save_data = SaveData()
+            print("写入数据库的数据：", panel_name, table.get_table_max())
+            save_data.pymysql_write(manufacturer="xxx",name=panel_name, max_value=table.get_table_max())
 
 
 
@@ -213,23 +215,6 @@ if __name__ == "__main__":
     dashboard = GrafanaDashboard(url, username, password, uid )
     print(os.getenv("CHROME_DEBUG"))
     dashboard.init_chromium(debug=os.getenv("CHROME_DEBUG"))
-    dashboard.render_panel(date_from, date_to, panel_id, safe_filename)
-
-
-    # 获取title legend table类型的原始数据
-    for i in dashboard.driver.find_elements(By.XPATH, '//*[@class="css-5cr14k"]'):
-        org_data = i.text
-    print("org_data=======", org_data)
-
-    # 初始化数据成json格式
-    legend_table = LegendTable(org_data)
-    print("Parsed Data:", legend_table.parse())
-    print("最大值   ============",legend_table.get_max())
-    print("平均最大值============",legend_table.get_mean_max())
-
-    # 保存数据到结果文件
-    save_data = SaveData(filename="result.txt")
-    save_data.insert_result_to_file("最大值", legend_table.get_max())
-    save_data.insert_result_to_file("平均最大值", legend_table.get_mean_max())
+    dashboard.render_panel(date_from, date_to, panel_id, panel_name="测试面板", row_value="测试行")
 
     dashboard.driver.quit()

@@ -61,6 +61,13 @@ class Table:
         # 假设我们要获取某个特定列的最大值，这里以"时间范围内重启次数"为例
         max_value = max(item[self.headers[-1]] for item in json_data if self.headers[-1] in item)
 
+        if isinstance(max_value, str):
+            if "GB" in max_value or "GiB" in max_value:
+                # 如果是字符串形式的GB，转换为数字
+                max_value = float(max_value.replace("GB", "").replace("GiB", "").strip()) * 1024
+            elif "KB" in max_value or "KiB" in max_value:
+                # 如果是字符串形式的KB，转换为数字
+                max_value = float(max_value.replace("KB", "").replace("KiB", "").strip()) / 1024
         return max_value
 
 

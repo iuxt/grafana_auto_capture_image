@@ -116,6 +116,7 @@ class LegendTable:
         except ValueError:
             return 0.0
 
+
     def get_max(self, field: str = "Max") -> Optional[Dict[str, str]]:
         """获取指定字段的最大值"""
         parsed_data = self.parse()
@@ -124,9 +125,23 @@ class LegendTable:
             
         return max(parsed_data, key=lambda x: self.convert_to_comparable(x[field]))
 
+
+    def get_max_numeric(self, field: str = "Max") -> Optional[float]:
+        """获取指定字段的最大值（纯数字）"""
+        max_item = self.get_max(field)
+        if max_item is None:
+            return None
+        return self.convert_to_comparable(max_item[field])
+
+
     def get_mean_max(self) -> Optional[Dict[str, str]]:
         """获取Mean字段的最大值"""
         return self.get_max("Mean")
+
+
+    def get_mean_max_numeric(self) -> Optional[float]:
+        """获取Mean字段的最大值（纯数字）"""
+        return self.get_max_numeric("Mean")
 
 
 if __name__ == "__main__":
