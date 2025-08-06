@@ -161,7 +161,8 @@ class GrafanaDashboard:
         print(f"截图保存到：{safe_filename}")
 
         # 保存数据到结果文件
-        if panel_name in ['CPU使用率', '内存使用率', '磁盘使用率', 'SDK内存占用', 'MySQL连接数百分比', '每分钟慢查询数量', 'Kafka消费组延迟', '每秒操作数']:
+        if panel_name in ['CPU使用率', '内存使用率', '磁盘使用率', 'SDK内存占用', 'MySQL连接数百分比', '每分钟慢查询数量', 'Kafka消费组延迟', '每秒操作数', 
+                          '每分钟访问量', 'SDK服务响应延迟水位线']:
             # 获取title legend table类型的原始数据
             for i in self.driver.find_elements(By.XPATH, '//*[@class="css-5cr14k"]'):
                 org_data = i.text
@@ -178,6 +179,8 @@ class GrafanaDashboard:
             save_data = SaveData()
             print("写入数据库的数据：", legend_table.get_max_numeric(), legend_table.get_mean_max_numeric())
             save_data.pymysql_write(manufacturer="xxx",name=panel_name, max_value=legend_table.get_max_numeric(), mean_max=legend_table.get_mean_max_numeric())
+
+            
         elif panel_name in ['重启次数统计', '表占用空间概览Top10']:
             print("table 类型  -------------", panel_name)
             # 获取title table类型的原始数据

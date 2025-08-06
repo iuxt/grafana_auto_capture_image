@@ -16,21 +16,36 @@ class LegendTable:
         if not self.data.strip():
             return []
 
-        lines = self.data.strip().split('\n')
-        headers = lines[0].strip().split()
+        lines = [line.strip() for line in self.data.strip().split('\n') if line.strip()]
+        if not lines:
+            return []
+            
+        headers = lines[0].split()
         
-        # 确定数据格式类型
+        # Handle special case where we have probability-time pairs
+        if len(headers) == 2 and headers[1] == "Max":
+            result = []
+            for i in range(1, len(lines), 2):
+                if i + 1 >= len(lines):
+                    break
+                probability = lines[i]
+                time_value = lines[i+1]
+                result.append({
+                    headers[0]: probability,
+                    headers[1]: time_value
+                })
+            return result
+        
+        # Original format handling
         data_type = self._detect_data_type(lines)
-        
         result = []
         for i in range(1, len(lines), 2):
             if i + 1 >= len(lines):
                 break
                 
-            name = lines[i].strip()
-            metrics = lines[i + 1].strip()
+            name = lines[i]
+            metrics = lines[i + 1]
             
-            # 根据数据类型处理指标
             processed_metrics = self._process_metrics(metrics, data_type)
             
             if len(headers) == 3 and len(processed_metrics) >= 2:
@@ -116,7 +131,6 @@ class LegendTable:
         except ValueError:
             return 0.0
 
-
     def get_max(self, field: str = "Max") -> Optional[Dict[str, str]]:
         """获取指定字段的最大值"""
         parsed_data = self.parse()
@@ -125,7 +139,6 @@ class LegendTable:
             
         return max(parsed_data, key=lambda x: self.convert_to_comparable(x[field]))
 
-
     def get_max_numeric(self, field: str = "Max") -> Optional[float]:
         """获取指定字段的最大值（纯数字）"""
         max_item = self.get_max(field)
@@ -133,11 +146,9 @@ class LegendTable:
             return None
         return self.convert_to_comparable(max_item[field])
 
-
     def get_mean_max(self) -> Optional[Dict[str, str]]:
         """获取Mean字段的最大值"""
         return self.get_max("Mean")
-
 
     def get_mean_max_numeric(self) -> Optional[float]:
         """获取Mean字段的最大值（纯数字）"""
@@ -145,36 +156,17 @@ class LegendTable:
 
 
 if __name__ == "__main__":
-    test_cases = [
-        """Name Mean Max
-        gw_elk1
-        79.3% 79.5%
-        gw_elk2
-        77.8% 78.1%""",
-        
-        """Name Mean Max
-        disk1
-        1.2 GiB 2.4 GiB
-        disk2
-        512 MiB 768 MiB""",
-        
-        """Name Mean Max
-        service1
-        2.24 K 150ms
-        service2
-        1.5 K 230ms""",
-        
-        """Name Mean Max
-        item1
-        100 200
-        item2
-        150 180"""
-    ]
+    data = """Name Max
+    0.99
+    187 ms
+    0.95
+    21.7 ms
+    0.90
+    15.2 ms
+    """
     
-    for i, data in enumerate(test_cases, 1):
-        print(f"\n=== Test Case {i} ===")
-        table = LegendTable(data)
-        parsed = table.parse()
-        print("Parsed Data:", parsed)
-        print("Max Value:", table.get_max())
-        print("Mean Max:", table.get_mean_max())
+    table = LegendTable(data)
+    parsed = table.parse()
+    print("Parsed Data:", parsed)
+    print("Max Value:", table.get_max())
+    print("Max Numeric Value:", table.get_max_numeric())

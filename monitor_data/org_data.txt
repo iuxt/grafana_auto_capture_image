@@ -1,0 +1,225 @@
+
+org_data======= Name Max Mean
+当前连接数
+2.14% 1.44%
+活跃的连接数
+0.106% 0.0314%
+
+
+org_data======= Name Max Mean
+每分钟慢查询数量
+8.00 0.607
+
+
+data======= idk_base.ca_cert_info
+100.0 GiB
+idk_base.ca_sign_20240923
+23.7 GiB
+idk_base.mobile_device
+18.8 GiB
+idk_base.vehicle_user_key_his
+10.4 GiB
+idk_base.virtualkey_user
+4.56 GiB
+idk_base.sys_log
+4.55 GiB
+idk_base.bluetooth_device_logs
+1.94 GiB
+idk_base.vehicle_logs
+1.61 GiB
+idk_base.bluetooth_device
+1.33 GiB
+idk_base.vehicle_user_role
+1.24 GiB
+title======= Field
+占用空间
+
+
+
+org_data======= Name Max Mean
+gw_k8s_node_1_Total
+25.2% 15.2%
+gw_k8s_node_2_Total
+13.8% 8.41%
+gw_k8s_node_3_Total
+19.9% 11.9%
+gw_k8s_node_4_Total
+18.7% 11.1%
+gw_k8s_node_5_Total
+14.3% 8.80%
+gw_k8s_node_6_Total
+15.7% 9.75%
+gw_k8s_node_7_Total
+22.0% 12.8%
+gw_k8s_node_8_Total
+3.78% 3.06%
+gw_kafka1_Total
+2.09% 1.60%
+gw_kafka2_Total
+2.39% 1.77%
+gw_kafka3_Total
+2.38% 1.37%
+
+
+
+org_data======= Name Max Mean
+gw_k8s_node_1：/
+14.8% 14.7%
+gw_k8s_node_2：/
+12.0% 11.9%
+gw_k8s_node_3：/
+37.1% 37.0%
+gw_k8s_node_4：/
+20.1% 20.1%
+gw_k8s_node_5：/
+20.2% 20.1%
+gw_k8s_node_6：/
+20.2% 20.2%
+gw_k8s_node_7：/
+19.1% 19.0%
+gw_k8s_node_8：/
+19.2% 19.1%
+gw_kafka1：/
+17.4% 17.0%
+gw_kafka2：/
+26.3% 25.9%
+gw_kafka3：/
+16.1% 15.6%
+
+
+
+org_data======= Name Mean Max
+gw_k8s_node_1
+50.7% 51.0%
+gw_k8s_node_2
+47.7% 47.9%
+gw_k8s_node_4
+43.3% 43.4%
+gw_kafka2
+39.6% 39.8%
+gw_k8s_node_7
+38.0% 38.1%
+gw_k8s_node_3
+35.8% 35.9%
+gw_k8s_node_6
+34.2% 34.5%
+gw_kafka1
+28.3% 28.5%
+gw_k8s_node_8
+27.1% 27.6%
+gw_k8s_node_5
+26.4% 26.4%
+gw_kafka3
+25.1% 25.3%
+
+
+
+data======= 2025-08-06 18:12:58.118
+idk-mob-sdk-server-69d8dd8d9c-6k94f
+0
+2025-08-06 18:12:58.118
+idk-mob-sdk-server-69d8dd8d9c-ck6p2
+0
+2025-08-06 18:12:58.118
+idk-mob-sdk-server-69d8dd8d9c-l9n7k
+0
+2025-08-06 18:12:58.118
+idk-mob-sdk-server-69d8dd8d9c-ntw7t
+0
+2025-08-06 18:12:58.118
+idk-mob-sdk-server-69d8dd8d9c-p6rlv
+0
+2025-08-06 18:12:58.118
+idk-mob-sdk-server-69d8dd8d9c-sf4zx
+0
+2025-08-06 18:12:58.118
+idk-mob-sdk-server-69d8dd8d9c-w2qp2
+0
+2025-08-06 18:12:58.118
+idk-oms-server-748d45cb44-ngzdh
+0
+2025-08-06 18:12:58.118
+idk-oms-wfe-5cbb694975-ndvmd
+0
+2025-08-06 18:12:58.118
+idk-oms-wfe-5cbb694975-pgrmx
+0
+2025-08-06 18:12:58.118
+idk-supplier-server-77c9c59dfb-c6tct
+0
+2025-08-06 18:12:58.118
+idk-supplier-server-77c9c59dfb-s4s64
+0
+2025-08-06 18:12:58.118
+idk-supplier-wfe-77f49cbbf7-wmqdt
+0
+2025-08-06 18:12:58.118
+idk-supplier-wfe-77f49cbbf7-z7d7v
+0
+2025-08-06 18:12:58.118
+idk-tsp-server-5b64d7c7cb-6zgd6
+0
+2025-08-06 18:12:58.118
+idk-tsp-server-5b64d7c7cb-sp82f
+0
+2025-08-06 18:12:58.118
+idk-tsp-server-5b64d7c7cb-t8rvf
+0
+2025-08-06 18:12:58.118
+mysql-exporter-76c6cc6b49-ddts4
+0
+2025-08-06 18:12:58.118
+nginx-gw-dkopration-fc7dd6d85-jgbx5
+0
+2025-08-06 18:12:58.118
+nginx-gw-dksupplier-5cd68fff6f-vwhcd
+0
+2025-08-06 18:12:58.118
+nginx-gw-dkmonitor-db76b69c6-z5vnk
+0
+2025-08-06 18:12:58.118
+nginx-new-6bf7b5c49d-9fdzm
+0
+title======= Time
+Pod名
+时间范围内重启次数
+
+
+
+org_data======= Name Max Mean
+get
+234 115
+pexpire
+2.93 1.53
+set
+2.93 1.53
+del
+2.87 1.42
+ping
+1.93 1.93
+auth
+1.63 1.63
+config
+1.07 1.00
+replconf
+1.00 1.00
+
+
+
+org_data======= Name Mean Max
+k8s_group (topic: ingress-k8s)
+848 3.43 K
+user_monitor_point_group (topic: user_monitor_point)
+56.2 181
+
+
+
+org_data======= Name Max
+0.99
+187 ms
+0.95
+21.7 ms
+0.90
+15.2 ms
+
+

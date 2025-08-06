@@ -6,6 +6,7 @@ class Table:
         self.title = title
         self.data = data
         headers = [line.strip() for line in self.title.strip().split('\n') if line.strip()]
+        print(f"Headers: {headers}")
         self.headers = headers
 
     def _convert_to_mb(self, value: str) -> float:
@@ -134,6 +135,8 @@ if __name__ == "__main__":
     idk_base.vehicle_user_role
     1.24 GiB
     """
+
+
     table = Table(title, data)
     
     # 转换数据并打印
