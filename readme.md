@@ -1,6 +1,10 @@
 ## 自动截图Grafana
 
+![](/images/run.mp4)
 
+111
+
+<video src="/images/run.mp4" controls="controls" width="500" height="300"></video>
 
 ## 准备工作
 
