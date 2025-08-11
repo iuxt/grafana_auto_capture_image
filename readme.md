@@ -1,8 +1,12 @@
 ## 自动截图Grafana
 
+![](/images/run.gif)
+
+222
+
 ![](/images/run.mp4)
 
-111
+333
 
 <video src="/images/run.mp4" controls="controls" width="500" height="300"></video>
 
