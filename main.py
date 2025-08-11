@@ -97,7 +97,8 @@ if __name__ == "__main__":
     for panel in panels:
         row_value = panel.get('row', None)
         row_value = '' if row_value is None else str(row_value)
-        dashboard.render_panel(date_from=grafana.date_from, date_to=grafana.date_to, panel_id=panel['id'], row_value=row_value, panel_name=panel['title'])
+        manufacturer = Utils.get_name(sys.argv[1])
+        dashboard.render_panel(date_from=grafana.date_from, date_to=grafana.date_to, panel_id=panel['id'], row_value=row_value, panel_name=panel['title'], manufacturer=manufacturer)
 
 
     dashboard.driver.quit()

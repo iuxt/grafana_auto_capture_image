@@ -1,5 +1,25 @@
+from dotenv import load_dotenv
+import os
+import json
+
+# 在模块加载时初始化环境变量
+load_dotenv('.env')
 
 class Utils:
+    @staticmethod
+    def get_name(uid):
+        name_mapping_str = os.getenv("NAME_MAPPING")
+        if name_mapping_str is None:
+            raise ValueError("NAME_MAPPING environment variable not found")
+        
+        try:
+            name_mapping = json.loads(name_mapping_str)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in NAME_MAPPING: {e}")
+        
+        return name_mapping.get(uid)  # 返回对应uid的值
+    
+
     @staticmethod
     def get_title(dashboard_id, datetime):
         """
@@ -89,3 +109,7 @@ class Utils:
         return html_content
 
 
+
+if __name__ == "__main__":
+    utils = Utils()
+    print(utils.get_name("3"))

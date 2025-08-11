@@ -115,7 +115,7 @@ class GrafanaDashboard:
             return False
 
 
-    def render_panel(self, date_from, date_to, panel_id, row_value, panel_name, max_retries=3, retry_interval=5):
+    def render_panel(self, date_from, date_to, panel_id, row_value, panel_name, manufacturer, max_retries=3, retry_interval=5):
         print(f"Processing panel: {panel_name}")
         os.makedirs('/tmp/output/' + row_value + '/', exist_ok=True)
         safe_filename = '/tmp/output/' + row_value + '/' + re.sub(r'[\\/*?:"<>|]', '_', panel_name) + '.png'
@@ -178,7 +178,7 @@ class GrafanaDashboard:
             # 保存数据到结果
             save_data = SaveData()
             print("写入数据库的数据：", legend_table.get_max_numeric(), legend_table.get_mean_max_numeric())
-            save_data.pymysql_write(manufacturer="xxx",name=panel_name, max_value=legend_table.get_max_numeric(), mean_max=legend_table.get_mean_max_numeric())
+            save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=legend_table.get_max_numeric(), mean_max=legend_table.get_mean_max_numeric())
 
             
         elif panel_name in ['重启次数统计', '表占用空间概览Top10']:
@@ -197,7 +197,7 @@ class GrafanaDashboard:
             # 保存数据到结果文件
             save_data = SaveData()
             print("写入数据库的数据：", panel_name, table.get_table_max())
-            save_data.pymysql_write(manufacturer="xxx",name=panel_name, max_value=table.get_table_max())
+            save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=table.get_table_max())
 
 
 
