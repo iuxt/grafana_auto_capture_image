@@ -34,7 +34,12 @@ def send_email(zip_filename, to_email, subject=None, body=None, from_email=None,
     with open(zip_filename, "rb") as file:
         part.set_payload(file.read())
     encoders.encode_base64(part)
-    part.add_header('Content-Disposition', f'attachment; filename={os.path.basename(zip_filename)}')
+    part.add_header(
+        'Content-Disposition',
+        'attachment',
+        filename=os.path.basename(zip_filename)  # 使用filename参数自动处理引号
+    )
+    print(os.path.basename(zip_filename))
     msg.attach(part)
 
     # 连接邮件服务器并发送邮件
@@ -50,7 +55,7 @@ def send_email(zip_filename, to_email, subject=None, body=None, from_email=None,
 
 if __name__ == "__main__":
     source_dir = "/tmp/output"
-    zip_filename = "/tmp/output.zip"
+    zip_filename = "/tmp/你output.zip"
     
     # 加载环境变量
     load_dotenv('.env')
@@ -63,14 +68,9 @@ if __name__ == "__main__":
     # 打包文件
     zip_files(source_dir, zip_filename)
 
-    # 读取报告文件
-    if len(sys.argv) < 2:
-        print("Error: Missing argument for result file.")
-        sys.exit(1)
-
-    report_filename = '/tmp/' + sys.argv[1] + '-result.txt'
+    report_filename = '/tmp/result.txt'
     try:
-        with open(report_filename, 'r') as f:
+        with open(report_filename, 'r', encoding='utf-8') as f:
             body = f.read()
     except FileNotFoundError:
         print(f"Error: Report file {report_filename} not found.")

@@ -1,6 +1,4 @@
-import requests
-import json
-import re
+
 from datetime import datetime
 import os
 import time
@@ -14,56 +12,7 @@ from monitor_data.legend_table import LegendTable
 from monitor_data.table import Table
 from monitor_data.save_data import SaveData
 from utils import Utils
-
-
-class GrafanaApi:
-    def __init__(self, url, api_key, uid, date_from, date_to):
-        self.url = url
-        self.api_key = api_key
-        self.uid = uid
-        self.date_from = date_from
-        self.date_to = date_to
-
-    def get_dashboard_json(self):
-        """获取仪表板 JSON 数据"""
-        response = requests.get(
-            url = f"{self.url}" + f"/api/dashboards/uid/{self.uid}",
-            headers={"Authorization": f"Bearer {self.api_key}"}
-        )
-        return response.json()
-
-    def extract_panel_info(self, dashboard_json=None):
-        """提取面板信息，排除行类型的面板，并正确处理展开和折叠的行"""
-        if dashboard_json is None:
-            dashboard_json = self.get_dashboard_json()
-
-        panels_info = []
-        current_row = None
-
-        def process_panel(panel, parent_row):
-            nonlocal current_row
-            panel_type = panel.get('type')
-
-            if panel_type == 'row':
-                current_row = panel
-                if panel.get('collapsed', False):
-                    for sub_panel in panel.get('panels', []):
-                        process_panel(sub_panel, current_row)
-            else:
-                if 'id' in panel and 'title' in panel:
-                    panels_info.append({
-                        'id': panel['id'],
-                        'title': panel['title'],
-                        'row': parent_row['title'] if parent_row else None
-                    })
-
-        if 'dashboard' in dashboard_json and 'panels' in dashboard_json['dashboard']:
-            for panel in dashboard_json['dashboard']['panels']:
-                process_panel(panel, current_row)
-
-        return panels_info
-
-
+from grafana_api import GrafanaApi
 
 
 
@@ -93,7 +42,7 @@ if __name__ == "__main__":
     # 遍历所有面板进行下载
     dashboard_json = grafana.get_dashboard_json()
     panels = grafana.extract_panel_info(dashboard_json)
-    result_file = '/tmp/' + sys.argv[1] + '-result.txt'
+    result_file = '/tmp/result.txt'
     for panel in panels:
         row_value = panel.get('row', None)
         row_value = '' if row_value is None else str(row_value)
@@ -116,8 +65,8 @@ if __name__ == "__main__":
     utc_now = datetime.now(ZoneInfo("UTC"))
     # 将 UTC 时间转换为北京时间
     beijing_time = utc_now.astimezone(ZoneInfo("Asia/Shanghai"))
-    
-    zip_filename = "/tmp/" + beijing_time.strftime('%Y-%m-%d') + '_' + sys.argv[1] +  ".zip"
-    title = Utils.get_title(sys.argv[1], beijing_time)
+    title = Utils.get_name(sys.argv[1]) + beijing_time.strftime('%Y-%m-%d %H:%M:%S')
+    zip_filename = "/tmp/" + Utils.get_name(sys.argv[1]) + '_' + beijing_time.strftime('%Y-%m-%d') +  ".zip"
+    print(zip_filename)
     send_mail.zip_files(source_dir, zip_filename)
-    send_mail.send_email(zip_filename, to_email, subject=title, body=Utils.get_html_content(filename=result_file, title=title, time=beijing_time.strftime('%Y-%m-%d %H:%M:%S')), from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
+    send_mail.send_email(zip_filename, to_email, subject=title, body=Utils.get_html_content(filename=result_file, title=title), from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)

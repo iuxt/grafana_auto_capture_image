@@ -11,6 +11,8 @@ import time
 from monitor_data.legend_table import LegendTable
 from monitor_data.table import Table
 from monitor_data.save_data import SaveData
+import ast
+
 
 class GrafanaDashboard:
     def __init__(self, url, username, password, uid):
@@ -160,28 +162,31 @@ class GrafanaDashboard:
         panel.screenshot(safe_filename)
         print(f"截图保存到：{safe_filename}")
 
-        # 保存数据到结果文件
-        if panel_name in ['CPU使用率', '内存使用率', '磁盘使用率', 'SDK内存占用', 'MySQL连接数百分比', '每分钟慢查询数量', 'Kafka消费组延迟', '每秒操作数', 
-                          '每分钟访问量', 'SDK服务响应延迟水位线']:
+        # 保存数据到数据库
+        if panel_name in ast.literal_eval(os.getenv("LEGEND_TABLE_NAME")):
             # 获取title legend table类型的原始数据
             for i in self.driver.find_elements(By.XPATH, '//*[@class="css-5cr14k"]'):
                 org_data = i.text
-            print("org_data=======", org_data)
+            print("原始数据=======", org_data)
             print("legend table 类型  -------------", panel_name)
 
             # 初始化数据成json格式
             legend_table = LegendTable(org_data)
-            print("Parsed Data:", legend_table.parse())
-            print("最大值   ============",legend_table.get_max())
-            print("平均最大值============",legend_table.get_mean_max())
+            parsed_data = legend_table.parse()
+            legend_max = legend_table.get_max_numeric()
+            legend_mean_max = legend_table.get_mean_max_numeric()
+            print("Parsed Data:", parsed_data)
+            print("最大值   ============",legend_max)
+            print("平均最大值============",legend_mean_max)
 
             # 保存数据到结果
             save_data = SaveData()
-            print("写入数据库的数据：", legend_table.get_max_numeric(), legend_table.get_mean_max_numeric())
-            save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=legend_table.get_max_numeric(), mean_max=legend_table.get_mean_max_numeric())
+            print("写入数据库的数据：", legend_max, legend_mean_max)
+            save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=legend_max, mean_max=legend_mean_max)
+            save_data.insert_result_to_file(title=panel_name, data=legend_max, filename='/tmp/result.txt')
 
-            
-        elif panel_name in ['重启次数统计', '表占用空间概览Top10']:
+
+        elif panel_name in ast.literal_eval(os.getenv("TABLE_NAME")):
             print("table 类型  -------------", panel_name)
             # 获取title table类型的原始数据
             for i in self.driver.find_elements(By.XPATH, '//*[@class="css-rzpihd"]'): # 数据不带标题
@@ -192,12 +197,14 @@ class GrafanaDashboard:
             print("title=======", title)
             table = Table(title, data)
             table_json_data = table.parse_table_data()
+            table_max = table.get_table_max()
             print("Parsed Data:", table_json_data)
 
             # 保存数据到结果文件
             save_data = SaveData()
-            print("写入数据库的数据：", panel_name, table.get_table_max())
-            save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=table.get_table_max())
+            print("写入数据库的数据：", panel_name, table_max)
+            save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=table_max)
+            save_data.insert_result_to_file(title=panel_name, data=table_max, filename='/tmp/result.txt')
 
 
 
