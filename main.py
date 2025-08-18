@@ -65,7 +65,7 @@ if __name__ == "__main__":
     utc_now = datetime.now(ZoneInfo("UTC"))
     # 将 UTC 时间转换为北京时间
     beijing_time = utc_now.astimezone(ZoneInfo("Asia/Shanghai"))
-    title = Utils.get_name(sys.argv[1]) + beijing_time.strftime('%Y-%m-%d %H:%M:%S')
+    title = Utils.get_name(sys.argv[1]) + ' ' + beijing_time.strftime('%Y-%m-%d') + '巡检报告'
     zip_filename = "/tmp/" + Utils.get_name(sys.argv[1]) + '_' + beijing_time.strftime('%Y-%m-%d') +  ".zip"
     print(zip_filename)
     send_mail.zip_files(source_dir, zip_filename)
