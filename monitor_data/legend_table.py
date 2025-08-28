@@ -1,140 +1,110 @@
 import re
 from typing import List, Dict, Optional
 
+
 class LegendTable:
+    UNIT_MULTIPLIERS = {
+        'GiB': 1024**3, 'GB': 1000**3,
+        'MiB': 1024**2, 'MB': 1000**2,
+        'KiB': 1024,    'KB': 1000,
+        'Mil': 1000000, 'K': 1000,
+        'M': 1000000,   'G': 1000000000,
+    }
+
+    UNIT_PATTERNS = {
+        'percentage': r'%',
+        'full_units': r'[\d.]+\s*(?:' + '|'.join(UNIT_MULTIPLIERS.keys()) + r')',
+        'time_units': r'[\d.]+\s*(?:ms|s)',
+        'plain': r'[\d.]+'
+    }
+
     def __init__(self, data: str):
         self.data = data
-        self._unit_patterns = {
-            'percentage': r'%',
-            'full_units': r'\s+(GiB|GB|MiB|MB|KiB|KB|Mil|K|M|G)',
-            'short_units': r'\s+([KMG])',
-            'time_units': r'\s*(ms|s)'
-        }
 
     def parse(self) -> List[Dict[str, str]]:
         """解析表格数据为结构化格式"""
-        if not self.data.strip():
-            return []
-
-        lines = [line.strip() for line in self.data.strip().split('\n') if line.strip()]
+        lines = [line.strip() for line in self.data.strip().splitlines() if line.strip()]
         if len(lines) < 2:
             return []
 
-        # 处理表头，保留"Last *"作为整体
+        headers = self._parse_headers(lines[0])
+        data_type = self._detect_data_type(lines)
+
+        result = []
+        # 每两行一个 entry（名称 + 指标）
+        for i in range(1, len(lines), 2):
+            if i + 1 >= len(lines):
+                break
+            entry = {"Name": lines[i]}
+            values = self._process_metrics(lines[i + 1], data_type)
+            for j, val in enumerate(values[:len(headers) - 1], start=1):
+                entry[headers[j]] = val
+            result.append(entry)
+        return result
+
+    def _parse_headers(self, header_line: str) -> List[str]:
+        """解析表头"""
+        raw = header_line.split()
         headers = []
-        raw_headers = lines[0].split()
         i = 0
-        while i < len(raw_headers):
-            if i+1 < len(raw_headers) and raw_headers[i] == "Last" and raw_headers[i+1] == "*":
+        while i < len(raw):
+            if i + 1 < len(raw) and raw[i] == "Last" and raw[i + 1] == "*":
                 headers.append("Last *")
                 i += 2
             else:
-                headers.append(raw_headers[i])
+                headers.append(raw[i])
                 i += 1
-
-        # 判断数据格式
-        is_alternating = False
-        if len(lines) > 1 and not any(c.isdigit() or c in '%' for c in lines[1]):
-            is_alternating = True
-
-        result = []
-        if is_alternating:
-            for i in range(1, len(lines), 2):
-                if i+1 >= len(lines):
-                    break
-                entry = {"Name": lines[i]}
-                values = lines[i+1].split()
-                for j in range(min(len(headers)-1, len(values))):
-                    entry[headers[j+1]] = values[j]
-                result.append(entry)
-        else:
-            data_type = self._detect_data_type(lines)
-            for i in range(1, len(lines), 2):
-                if i+1 >= len(lines):
-                    break
-                entry = {"Name": lines[i]}
-                processed = self._process_metrics(lines[i+1], data_type)
-                for j in range(min(len(headers)-1, len(processed))):
-                    entry[headers[j+1]] = processed[j]
-                result.append(entry)
-
-        return result
+        return headers
 
     def _detect_data_type(self, lines: List[str]) -> str:
-        sample_line = ' '.join(lines[1:3]) if len(lines) >= 3 else ''
-        if '%' in sample_line:
-            return 'percentage'
-        elif re.search(self._unit_patterns['full_units'], sample_line):
-            return 'full_units'
-        elif re.search(self._unit_patterns['short_units'], sample_line):
-            return 'short_units'
-        elif re.search(self._unit_patterns['time_units'], sample_line):
-            return 'time_units'
-        else:
-            return 'plain'
+        """检测数据类型"""
+        sample = ' '.join(lines[1:3])
+        for dtype, pattern in self.UNIT_PATTERNS.items():
+            if re.search(pattern, sample):
+                return dtype
+        return 'plain'
 
     def _process_metrics(self, metrics: str, data_type: str) -> List[str]:
-        if data_type == 'percentage':
-            return metrics.split()
-        elif data_type == 'full_units':
-            return re.findall(r'[\d.]+(?:\s*[a-zA-Z%]+)?', metrics)
-        elif data_type == 'short_units':
-            return re.sub(self._unit_patterns['short_units'], r'\1', metrics).split()
-        elif data_type == 'time_units':
-            return re.findall(r'[\d.]+\s*[a-zA-Z]+', metrics)
-        else:
-            return metrics.split()
+        """按数据类型解析数值"""
+        pattern = self.UNIT_PATTERNS.get(data_type, r'\S+')
+        return re.findall(pattern, metrics)
 
     def convert_to_comparable(self, value: str) -> float:
+        """统一数值转换为 float"""
         if not value:
             return 0.0
-
         value = value.strip()
 
         # 百分比
-        if '%' in value:
+        if value.endswith('%'):
             return float(value.replace('%', ''))
 
-        # 存储单位
-        unit_multipliers = {
-            'GiB': 1024**3,
-            'GB': 1000**3,
-            'MiB': 1024**2,
-            'MB': 1000**2,
-            'KiB': 1024,
-            'KB': 1000,
-            'Mil': 1_000_000,   # 新增
-            'K': 1_000,         # 改成 1000 更符合 "K/Mil" 场景
-            'M': 1_000_000,
-            'G': 1_000_000_000
-        }
-
-        for unit, multiplier in unit_multipliers.items():
+        # 单位数值
+        for unit, multiplier in self.UNIT_MULTIPLIERS.items():
             if value.endswith(unit):
                 return float(value.replace(unit, '').strip()) * multiplier
 
         # 时间
         if value.endswith("ms"):
             return float(value.replace("ms", '')) / 1000
-        elif value.endswith("s"):
+        if value.endswith("s"):
             return float(value.replace("s", ''))
 
+        # 纯数字
         try:
             return float(value)
         except ValueError:
             return 0.0
 
     def get_max(self, field: str = "Max") -> Optional[Dict[str, str]]:
-        parsed_data = self.parse()
-        if not parsed_data or field not in parsed_data[0]:
+        parsed = self.parse()
+        if not parsed or field not in parsed[0]:
             return None
-        return max(parsed_data, key=lambda x: self.convert_to_comparable(x[field]))
+        return max(parsed, key=lambda x: self.convert_to_comparable(x[field]))
 
     def get_max_numeric(self, field: str = "Max") -> Optional[float]:
         max_item = self.get_max(field)
-        if max_item is None:
-            return None
-        return round(self.convert_to_comparable(max_item[field]), 4)
+        return round(self.convert_to_comparable(max_item[field]), 4) if max_item else None
 
 
 if __name__ == "__main__":
@@ -149,7 +119,6 @@ if __name__ == "__main__":
     """
 
     table = LegendTable(data)
-    parsed = table.parse()
-    print("Parsed Data:", parsed)
+    print("Parsed Data:", table.parse())
     print("Max Value:", table.get_max())
     print("Max Numeric Value:", table.get_max_numeric())
