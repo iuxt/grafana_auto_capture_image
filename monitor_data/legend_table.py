@@ -6,7 +6,7 @@ class LegendTable:
         self.data = data
         self._unit_patterns = {
             'percentage': r'%',
-            'full_units': r'\s+(GiB|GB|MiB|MB|KiB|KB)',
+            'full_units': r'\s+(GiB|GB|MiB|MB|KiB|KB|Mil)',
             'short_units': r'\s+([KMG])',
             'time_units': r'\s*(ms|s)'
         }
@@ -109,14 +109,15 @@ class LegendTable:
         if '%' in value:
             return float(value.replace('%', ''))
         
-        # 处理存储单位
+        # 处理存储单位 - 添加Mil单位处理
         unit_multipliers = {
             'GiB': 1024**3,
             'GB': 1000**3,
             'MiB': 1024**2,
             'MB': 1000**2,
             'KiB': 1024,
-            'KB': 1000
+            'KB': 1000,
+            'Mil': 1000000  # 添加百万单位
         }
         
         for unit, multiplier in unit_multipliers.items():
@@ -175,17 +176,17 @@ class LegendTable:
 
 
 if __name__ == "__main__":
-#     data = """Name Max
-#     0.99
-#     187 ms
-#     0.95
-#     21.7 ms
-#     0.90
-#     15.2 ms
-#     """
-#     data = """Name Mean Last * Max
-# 172.26.9.9_Total
-# 2.24% 2.52% 2.96%"""
+    # data = """Name Max
+    # 0.99
+    # 187 ms
+    # 0.95
+    # 21.7 ms
+    # 0.90
+    # 15.2 ms
+    # """
+    # data = """Name Mean Last * Max
+    # 172.26.9.9_Total
+    # 2.24% 2.52% 2.96%"""
 
 
     data = """
@@ -224,7 +225,6 @@ if __name__ == "__main__":
     9.94 K
     vehicle2 (topic: diting_prod_vehicle_trace)
     42
-
     """
     table = LegendTable(data)
     parsed = table.parse()
