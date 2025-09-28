@@ -121,7 +121,7 @@ class GrafanaDashboard:
     def open_chart_panel(self, date_from, date_to, panel_id, max_retries=3, retry_interval=5):
         """打开指定的图表面板并等待其加载完成"""
         # 构建仪表板URL
-        dashboard_url = self.url + f"/d/{self.uid}/?orgId=1&from={date_from}&to={date_to}&timezone=browser&viewPanel=panel-{panel_id}"
+        dashboard_url = self.url + f"/d/{self.uid}/?orgId=1&from={date_from}&to={date_to}&timezone=browser&viewPanel=panel-{panel_id}&refresh=1d"
         
         # 打开图表页面
         print(f"正在打开图表页面: {dashboard_url}")
@@ -152,7 +152,11 @@ class GrafanaDashboard:
     
 
 
-    def render_panel(self, date_from, date_to, panel_id, row_value, panel_name, manufacturer, max_retries=3, retry_interval=5):
+    def render_panel(self, date_from, date_to, panel_id, row_value, panel_name, manufacturer, panel_type, max_retries=3, retry_interval=5):
+        """
+        panel_type: 面板类型，例如 'stat', 'table', 'graph', 'legend table' 等
+
+        """
         print(f"Processing panel: {panel_name}")
 
         # 创建保存截图的目录
@@ -175,7 +179,7 @@ class GrafanaDashboard:
         print(f"截图保存到：{safe_filename}")
 
         # 保存数据到数据库
-        if panel_name in ast.literal_eval(os.getenv("LEGEND_TABLE_NAME")):
+        if panel_type == 'timeseries' and panel_name in ast.literal_eval(os.getenv("LEGEND_TABLE_NAME")):
             # 获取title legend table类型的原始数据
             for i in self.driver.find_elements(By.XPATH, '//*[@class="css-5cr14k"]'):
                 org_data = i.text
@@ -198,7 +202,7 @@ class GrafanaDashboard:
             save_data.insert_result_to_file(title=panel_name, data=legend_max, filename='/tmp/result.txt')
 
 
-        elif panel_name in ast.literal_eval(os.getenv("TABLE_NAME")):
+        elif panel_type == 'table' and panel_name in ast.literal_eval(os.getenv("TABLE_NAME")):
             print("table 类型  -------------", panel_name)
             # 获取title table类型的原始数据
             for i in self.driver.find_elements(By.XPATH, '//*[@class="css-rzpihd"]'): # 数据不带标题
