@@ -1,4 +1,4 @@
-FROM debian:12
+FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/debian:12
 RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -49,7 +49,8 @@ RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debi
 ADD requirements.txt /code/requirements.txt
 RUN python3 -m venv /venv && \
     . /venv/bin/activate && \
-    pip3 install --upgrade pip && \
-    pip3 install -r /code/requirements.txt
+    pip config set global.index-url https://mirrors.ustc.edu.cn/pypi/simple && \
+    pip install --upgrade pip && \
+    pip install -r /code/requirements.txt
 WORKDIR /code
 CMD ["/venv/bin/python3"]
