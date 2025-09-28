@@ -38,7 +38,7 @@ class GrafanaDashboard:
 
 
         # 指定 ChromeDriver 的路径，就不会自动更新了
-        chrome_driver_path = "C:/Data/chromedriver-win64/chromedriver.exe"
+        chrome_driver_path = os.getenv("CHROME_DRIVER")
         service = Service(executable_path=chrome_driver_path)
 
 

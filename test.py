@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, ElementNotInteractableException
 from monitor_data import table, legend_table
 import time
+import os
 
 
 chrome_options = Options()
@@ -15,7 +16,7 @@ chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-extensions")
 
 # 指定 ChromeDriver 的路径
-chrome_driver_path = "C:/Data/chromedriver-win64/chromedriver.exe"
+chrome_driver_path = os.getenv("CHROME_DRIVER")
 
 # 创建 Service 对象并禁用自动更新
 service = Service(executable_path=chrome_driver_path)
