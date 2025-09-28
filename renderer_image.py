@@ -225,6 +225,6 @@ if __name__ == "__main__":
     dashboard = GrafanaDashboard(url, username, password, uid )
     print(os.getenv("CHROME_DEBUG"))
     dashboard.init_chromium(debug=os.getenv("CHROME_DEBUG"))
-    dashboard.render_panel(date_from, date_to, panel_id, panel_name="测试面板", row_value="测试行")
+    dashboard.render_panel(date_from, date_to, panel_id, panel_name="测试面板", row_value="测试行", manufacturer="测试厂商")
 
     dashboard.driver.quit()
