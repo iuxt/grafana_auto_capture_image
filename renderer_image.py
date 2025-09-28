@@ -117,42 +117,54 @@ class GrafanaDashboard:
             return False
 
 
+
+    def open_chart_panel(self, date_from, date_to, panel_id, max_retries=3, retry_interval=5):
+        """打开指定的图表面板并等待其加载完成"""
+        # 构建仪表板URL
+        dashboard_url = self.url + f"/d/{self.uid}/?orgId=1&from={date_from}&to={date_to}&timezone=browser&viewPanel=panel-{panel_id}"
+        
+        # 打开图表页面
+        print(f"正在打开图表页面: {dashboard_url}")
+        self.driver.get(dashboard_url)
+
+        # 等待仪表板加载完成
+        self.wait_for_element('//*[@class="css-itdw1b-panel-container"]')
+        self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]', timeout=600)
+
+        # 检查面板是否成功加载，如果没有加载成功，则重试
+        retries = 0
+        success = False
+        while retries < max_retries:
+            # 检查是否存在感叹号或"No data"
+            if self.check_xpath_element(xpath='//*[@class="css-om0k8z-toolbar-button-panel-header-state-button"]') or self.check_text_element("No data"):
+                print(f"第 {retries + 1} 次打开图表失败，正在重试...")
+                retries += 1
+                time.sleep(retry_interval)
+                self.driver.refresh()
+                self.wait_for_element('//*[@class="css-itdw1b-panel-container"]')
+                self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]', timeout=600)
+            else:
+                print("图表成功加载")
+                success = True
+                break
+        
+        return success
+    
+
+
     def render_panel(self, date_from, date_to, panel_id, row_value, panel_name, manufacturer, max_retries=3, retry_interval=5):
         print(f"Processing panel: {panel_name}")
+
+        # 创建保存截图的目录
         os.makedirs('/tmp/output/' + row_value + '/', exist_ok=True)
         safe_filename = '/tmp/output/' + row_value + '/' + re.sub(r'[\\/*?:"<>|]', '_', panel_name) + '.png'
         if os.path.exists(safe_filename):
             print(f"File {safe_filename} already exists, skipping...")
             return
 
-        # 转到某个仪表板页面
-        dashboard_url = self.url + f"/d/{self.uid}/?orgId=1&from={date_from}&to={date_to}&timezone=browser&viewPanel=panel-{panel_id}"
-        self.driver.get(dashboard_url)
-
-        # 等待仪表板加载完成，直到某个元素（例如第一个面板）可见
-        self.wait_for_element('//*[@class="css-itdw1b-panel-container"]')    
-
-        # 检测 Spinner 是否消失
-        self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]', timeout=600)
-
-        # 检查面板是否成功加载，如果没有加载成功，则重试
-        retries = 0
-        while retries < max_retries:
-            # 检查是否存在感叹号 或 存在 No data
-            if self.check_xpath_element(xpath='//*[@class="css-om0k8z-toolbar-button-panel-header-state-button"]') or self.check_text_element("No data"):
-                print(f"第 {retries + 1} 次生成图表失败，正在重试...")
-                retries += 1
-                time.sleep(retry_interval)
-                self.driver.refresh()
-                # 等待仪表板加载完成，直到某个元素（例如第一个面板）可见
-                self.wait_for_element('//*[@class="css-itdw1b-panel-container"]')    
-                # 检测 Spinner 是否消失
-                self.wait_for_element_disappear('//*[@class="css-1p4srcl-Icon"]', timeout=600)
-            else:
-                print("图表正常展示")
-                break
-
-        if retries == max_retries:
+        # 打开图表面板
+        success = self.open_chart_panel(date_from, date_to, panel_id, max_retries, retry_interval)
+        if not success:
             print(f"面板 '{safe_filename}' 重试 {max_retries} 次仍然失败，跳过该面板。")
             return
 
