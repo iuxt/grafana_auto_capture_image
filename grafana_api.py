@@ -20,15 +20,18 @@ class GrafanaApi:
         return response.json()
 
     def extract_panel_info(self, dashboard_json=None):
-        """提取面板信息，排除行类型的面板，并正确处理展开和折叠的行"""
+        """提取面板信息，排除行类型的面板，并正确处理展开和折叠的行
+        return: [{'id': 23763571997, 'title': '域名状态明细', 'description': '', 'row': 'DK数字钥匙域名监控'}, {'id': 68, 'title': 'HTTP总访问量', 'description': None, 'row': 'DK数字钥匙域名监控'}]
+        """
         if dashboard_json is None:
             dashboard_json = self.get_dashboard_json()
-
+        json.dump(dashboard_json, open('/tmp/dashboard.json', 'w', encoding='utf-8'), indent=2)
         panels_info = []
         current_row = None
 
         def process_panel(panel, parent_row):
             nonlocal current_row
+            print('=============================', panel.get('description'))
             panel_type = panel.get('type')
 
             if panel_type == 'row':
@@ -41,6 +44,7 @@ class GrafanaApi:
                     panels_info.append({
                         'id': panel['id'],
                         'title': panel['title'],
+                        'description': panel.get('description'),
                         'row': parent_row['title'] if parent_row else None
                     })
 
