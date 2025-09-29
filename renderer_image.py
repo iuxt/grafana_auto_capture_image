@@ -159,7 +159,12 @@ class GrafanaDashboard:
         """
         print(f"Processing panel: {panel_name}")
 
-        if "screenshot: true" in panel_description:
+        # 默认截图，如果指定了 screenshot: false 则跳过截图
+        # 如果不截图，也不保存数据，直接返回
+        if "screenshot: false" in panel_description:
+            print(f"面板 '{panel_name}' 描述中包含 'screenshot: false'，跳过截图。")
+            return
+        else:
             # 创建保存截图的目录
             os.makedirs('/tmp/output/' + row_value + '/', exist_ok=True)
             safe_filename = '/tmp/output/' + row_value + '/' + re.sub(r'[\\/*?:"<>|]', '_', panel_name) + '.png'
@@ -178,8 +183,6 @@ class GrafanaDashboard:
             # 对 panel 元素进行截图
             panel.screenshot(safe_filename)
             print(f"截图保存到：{safe_filename}")
-        else:
-            print(f"面板 '{panel_name}' 描述中不包含 'screenshot: true'，跳过截图。")
 
 
         if "save_data: true" in panel_description:
