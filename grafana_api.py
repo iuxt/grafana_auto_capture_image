@@ -33,7 +33,6 @@ class GrafanaApi:
 
         def process_panel(panel, parent_row):
             nonlocal current_row
-            print('=============================', panel.get('description'))
             panel_type = panel.get('type')
 
             if panel_type == 'row':
