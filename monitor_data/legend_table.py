@@ -176,19 +176,17 @@ class LegendTable:
 
 
 if __name__ == "__main__":
-    # data = """Name Max
-    # 0.99
-    # 187 ms
-    # 0.95
-    # 21.7 ms
-    # 0.90
-    # 15.2 ms
-    # """
-    # data = """Name Mean Last * Max
-    # 172.26.9.9_Total
-    # 2.24% 2.52% 2.96%"""
-
-
+    data = """Name Max
+    0.99
+    187 ms
+    0.95
+    21.7 ms
+    0.90
+    15.2 ms
+    """
+    data = """Name Mean Last * Max
+    172.26.9.9_Total
+    2.24% 2.52% 2.96%"""
     data = """
     Name Max
     app6 (topic: diting_prod_client_trace)
@@ -225,6 +223,11 @@ if __name__ == "__main__":
     9.94 K
     vehicle2 (topic: diting_prod_vehicle_trace)
     42
+    """
+    data = """
+    Name Mean Max
+    请求耗时
+    81.7 ms 5.03 s
     """
     table = LegendTable(data)
     parsed = table.parse()
