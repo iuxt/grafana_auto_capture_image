@@ -43,7 +43,9 @@ for panel in panels:
     row_value = panel.get('row', None)
     row_value = '' if row_value is None else str(row_value)
     manufacturer = Utils.get_name(sys.argv[1])
-    dashboard.render_panel(date_from=grafana.date_from, date_to=grafana.date_to, panel_id=panel['id'], row_value=row_value, panel_name=panel['title'], manufacturer=manufacturer, panel_type=panel['type'])
+    dashboard.render_panel(date_from=grafana.date_from, date_to=grafana.date_to, panel_id=panel['id'], 
+                           row_value=row_value, panel_name=panel['title'], manufacturer=manufacturer, 
+                           panel_description=panel.get('description') or '', panel_type=panel['type'])
 
 
 dashboard.driver.quit()

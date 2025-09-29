@@ -152,75 +152,83 @@ class GrafanaDashboard:
     
 
 
-    def render_panel(self, date_from, date_to, panel_id, row_value, panel_name, manufacturer, panel_type, max_retries=3, retry_interval=5):
+    def render_panel(self, date_from, date_to, panel_id, row_value, panel_name, manufacturer, panel_description, panel_type, max_retries=3, retry_interval=5):
         """
         panel_type: 面板类型，例如 'stat', 'table', 'graph', 'legend table' 等
 
         """
         print(f"Processing panel: {panel_name}")
 
-        # 创建保存截图的目录
-        os.makedirs('/tmp/output/' + row_value + '/', exist_ok=True)
-        safe_filename = '/tmp/output/' + row_value + '/' + re.sub(r'[\\/*?:"<>|]', '_', panel_name) + '.png'
-        if os.path.exists(safe_filename):
-            print(f"File {safe_filename} already exists, skipping...")
-            return
+        if "screenshot: true" in panel_description:
+            # 创建保存截图的目录
+            os.makedirs('/tmp/output/' + row_value + '/', exist_ok=True)
+            safe_filename = '/tmp/output/' + row_value + '/' + re.sub(r'[\\/*?:"<>|]', '_', panel_name) + '.png'
+            if os.path.exists(safe_filename):
+                print(f"File {safe_filename} already exists, skipping...")
+                return
 
-        # 打开图表面板
-        success = self.open_chart_panel(date_from, date_to, panel_id, max_retries, retry_interval)
-        if not success:
-            print(f"面板 '{safe_filename}' 重试 {max_retries} 次仍然失败，跳过该面板。")
-            return
+            # 打开图表面板
+            success = self.open_chart_panel(date_from, date_to, panel_id, max_retries, retry_interval)
+            if not success:
+                print(f"面板 '{safe_filename}' 重试 {max_retries} 次仍然失败，跳过该面板。")
+                return
 
-        # 定位目标 panel 元素
-        panel = self.driver.find_element(By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
-        # 对 panel 元素进行截图
-        panel.screenshot(safe_filename)
-        print(f"截图保存到：{safe_filename}")
-
-        # 保存数据到数据库
-        if panel_type == 'timeseries' and panel_name in ast.literal_eval(os.getenv("LEGEND_TABLE_NAME")):
-            # 获取title legend table类型的原始数据
-            for i in self.driver.find_elements(By.XPATH, '//*[@class="css-5cr14k"]'):
-                org_data = i.text
-            print("原始数据=======", org_data)
-            print("legend table 类型  -------------", panel_name)
-
-            # 初始化数据成json格式
-            legend_table = LegendTable(org_data)
-            parsed_data = legend_table.parse()
-            legend_max = legend_table.get_max_numeric()
-            legend_mean_max = legend_table.get_mean_max_numeric()
-            print("Parsed Data:", parsed_data)
-            print("最大值   ============",legend_max)
-            print("平均最大值============",legend_mean_max)
-
-            # 保存数据到结果
-            save_data = SaveData()
-            print("写入数据库的数据：", legend_max, legend_mean_max)
-            save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=legend_max, mean_max=legend_mean_max)
-            save_data.insert_result_to_file(title=panel_name, data=legend_max, filename='/tmp/result.txt')
+            # 定位目标 panel 元素
+            panel = self.driver.find_element(By.XPATH, '//*[@class="css-itdw1b-panel-container"]')
+            # 对 panel 元素进行截图
+            panel.screenshot(safe_filename)
+            print(f"截图保存到：{safe_filename}")
+        else:
+            print(f"面板 '{panel_name}' 描述中不包含 'screenshot: true'，跳过截图。")
 
 
-        elif panel_type == 'table' and panel_name in ast.literal_eval(os.getenv("TABLE_NAME")):
-            print("table 类型  -------------", panel_name)
-            # 获取title table类型的原始数据
-            for i in self.driver.find_elements(By.XPATH, '//*[@class="css-rzpihd"]'): # 数据不带标题
-                data = i.text
-            for i in self.driver.find_elements(By.XPATH, '//*[@class="css-1y4sadw-row"]'): # 标题
-                title = i.text
-            print("data=======", data)
-            print("title=======", title)
-            table = Table(title, data)
-            table_json_data = table.parse_table_data()
-            table_max = table.get_table_max()
-            print("Parsed Data:", table_json_data)
+        if "save_data: true" in panel_description:
+            # 保存数据到数据库
+            # //todo 这里改一下，根据 面板的 discription 来取不同的数值
+            if panel_type == 'timeseries':
+                # 获取title legend table类型的原始数据
+                for i in self.driver.find_elements(By.XPATH, '//*[@class="css-5cr14k"]'):
+                    org_data = i.text
+                print("原始数据=======", org_data)
+                print("legend table 类型  -------------", panel_name)
 
-            # 保存数据到结果文件
-            save_data = SaveData()
-            print("写入数据库的数据：", panel_name, table_max)
-            save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=table_max)
-            save_data.insert_result_to_file(title=panel_name, data=table_max, filename='/tmp/result.txt')
+                # 初始化数据成json格式
+                legend_table = LegendTable(org_data)
+                parsed_data = legend_table.parse()
+                legend_max = legend_table.get_max_numeric()
+                legend_mean_max = legend_table.get_mean_max_numeric()
+                print("Parsed Data:", parsed_data)
+                print("最大值   ============",legend_max)
+                print("平均最大值============",legend_mean_max)
+
+                # 保存数据到结果
+                save_data = SaveData()
+                print("写入数据库的数据：", legend_max, legend_mean_max)
+                save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=legend_max, mean_max=legend_mean_max)
+                save_data.insert_result_to_file(title=panel_name, data=legend_max, filename='/tmp/result.txt')
+
+
+            elif panel_type == 'table':
+                print("table 类型  -------------", panel_name)
+                # 获取title table类型的原始数据
+                for i in self.driver.find_elements(By.XPATH, '//*[@class="css-rzpihd"]'): # 数据不带标题
+                    data = i.text
+                for i in self.driver.find_elements(By.XPATH, '//*[@class="css-1y4sadw-row"]'): # 标题
+                    title = i.text
+                print("data=======", data)
+                print("title=======", title)
+                table = Table(title, data)
+                table_json_data = table.parse_table_data()
+                table_max = table.get_table_max()
+                print("Parsed Data:", table_json_data)
+
+                # 保存数据到结果文件
+                save_data = SaveData()
+                print("写入数据库的数据：", panel_name, table_max)
+                save_data.pymysql_write(manufacturer=manufacturer,name=panel_name, max_value=table_max)
+                save_data.insert_result_to_file(title=panel_name, data=table_max, filename='/tmp/result.txt')
+        else:
+            print(f"面板 '{panel_name}' 描述中不包含 'save_data: true'，跳过保存数据。")
 
 
 
@@ -235,12 +243,12 @@ if __name__ == "__main__":
     # date_from="2025-03-01T00:00:00.000Z",
     date_from = "now-1d"
     date_to = "now"
-    panel_id = "23763571999"
+    panel_id = "3"
     safe_filename = "系统负载.png"
 
     dashboard = GrafanaDashboard(url, username, password, uid )
     print(os.getenv("CHROME_DEBUG"))
     dashboard.init_chromium(debug=os.getenv("CHROME_DEBUG"))
-    dashboard.render_panel(date_from, date_to, panel_id, panel_name="测试面板", row_value="测试行", manufacturer="测试厂商")
+    dashboard.render_panel(date_from, date_to, panel_id, panel_name="测试面板", panel_description="screenshot: true\nsave_data: true", panel_type="timeseries", row_value="测试行", manufacturer="测试厂商")
 
     dashboard.driver.quit()
