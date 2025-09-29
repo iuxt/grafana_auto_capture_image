@@ -11,7 +11,6 @@ class LegendTable:
             'time_units': r'\s*(ms|s)'
         }
 
-
     def parse(self) -> List[Dict[str, str]]:
         """解析表格数据为结构化格式"""
         if not self.data.strip():
@@ -33,70 +32,74 @@ class LegendTable:
                 headers.append(raw_headers[i])
                 i += 1
 
-        # 判断数据格式：交替格式(名称+数值)还是标准格式
-        is_alternating = False
-        if len(lines) > 1 and not any(c.isdigit() or c in '%' for c in lines[1]):
-            is_alternating = True
-
         result = []
-        if is_alternating:
-            # 处理交替格式(名称+数值)
-            for i in range(1, len(lines), 2):
-                if i+1 >= len(lines):
-                    break
-                entry = {"Name": lines[i]}
-                # 使用split()处理可能的多列数值
-                values = lines[i+1].split()
-                for j in range(min(len(headers)-1, len(values))):
-                    entry[headers[j+1]] = values[j]
-                result.append(entry)
-        else:
-            # 处理标准格式(名称+多列数值)
-            data_type = self._detect_data_type(lines)
-            for i in range(1, len(lines), 2):
-                if i+1 >= len(lines):
-                    break
-                entry = {"Name": lines[i]}
-                processed = self._process_metrics(lines[i+1], data_type)
+        i = 1
+        while i < len(lines):
+            # 当前行是名称
+            name_line = lines[i]
+            
+            # 检查下一行是否存在，并根据下一行内容判断数据类型
+            if i + 1 < len(lines):
+                value_line = lines[i + 1]
+                
+                # 根据下一行的内容检测数据类型
+                data_type = self._detect_data_type_by_line(value_line)
+                
+                entry = {"Name": name_line}
+                processed = self._process_metrics(value_line, data_type)
+                
+                # 确保处理后的数据列数与表头匹配
                 for j in range(min(len(headers)-1, len(processed))):
                     entry[headers[j+1]] = processed[j]
+                
+                # 如果处理后的数据列数不足，用空字符串填充
+                for j in range(len(processed), len(headers)-1):
+                    entry[headers[j+1]] = ""
+                    
                 result.append(entry)
+                i += 2  # 前进两行
+            else:
+                # 只有名称没有数值的情况
+                entry = {"Name": name_line}
+                # 为缺失的数值字段设置空值
+                for j in range(1, len(headers)):
+                    entry[headers[j]] = ""
+                result.append(entry)
+                i += 1
 
         return result
 
-
-    def _detect_data_type(self, lines: List[str]) -> str:
-        """检测数据类型"""
-        sample_line = ' '.join(lines[1:3]) if len(lines) >= 3 else ''
-        
-        if '%' in sample_line:
+    def _detect_data_type_by_line(self, line: str) -> str:
+        """根据单行内容检测数据类型"""
+        if '%' in line:
             return 'percentage'
-        elif re.search(self._unit_patterns['full_units'], sample_line):
-            return 'full_units'
-        elif re.search(self._unit_patterns['short_units'], sample_line):
-            return 'short_units'
-        elif re.search(self._unit_patterns['time_units'], sample_line):
+        elif re.search(self._unit_patterns['time_units'], line):
             return 'time_units'
+        elif re.search(self._unit_patterns['full_units'], line):
+            return 'full_units'
+        elif re.search(self._unit_patterns['short_units'], line):
+            return 'short_units'
         else:
             return 'plain'
-
 
     def _process_metrics(self, metrics: str, data_type: str) -> List[str]:
         """根据数据类型处理指标字符串"""
         if data_type == 'percentage':
             return metrics.split()
+        elif data_type == 'time_units':
+            # 专门处理时间单位：匹配数字+时间单位（如 81.7 ms, 5.03 s）
+            # 使用正则表达式确保单位和数值保持在一起
+            time_pattern = r'[\d.]+\s*(?:ms|s)'
+            matches = re.findall(time_pattern, metrics)
+            return matches
         elif data_type == 'full_units':
-            # 匹配数字+单位（如 1.2GiB）
+            # 匹配数字+完整单位（如 1.2GiB）
             return re.findall(r'[\d.]+(?:\s*[a-zA-Z%]+)?', metrics)
         elif data_type == 'short_units':
             # 简写单位处理（如 1.2G -> 1.2）
             return re.sub(self._unit_patterns['short_units'], r'\1', metrics).split()
-        elif data_type == 'time_units':
-            # 匹配时间值（如 62.2 ms）
-            return re.findall(r'[\d.]+\s*[a-zA-Z]+', metrics)
         else:
             return metrics.split()
-
 
     def convert_to_comparable(self, value: str) -> float:
         """将不同单位的数值转换为可比较的浮点数"""
@@ -109,7 +112,7 @@ class LegendTable:
         if '%' in value:
             return float(value.replace('%', ''))
         
-        # 处理存储单位 - 添加Mil单位处理
+        # 处理存储单位
         unit_multipliers = {
             'GiB': 1024**3,
             'GB': 1000**3,
@@ -117,7 +120,7 @@ class LegendTable:
             'MB': 1000**2,
             'KiB': 1024,
             'KB': 1000,
-            'Mil': 1000000  # 添加百万单位
+            'Mil': 1000000
         }
         
         for unit, multiplier in unit_multipliers.items():
@@ -135,18 +138,23 @@ class LegendTable:
             if unit in value:
                 return float(value.replace(unit, '')) * multiplier
         
-        # 处理时间单位
+        # 处理时间单位 - 这是重点
         if 'ms' in value:
-            return float(value.replace('ms', '')) / 1000
-        elif 's' in value:
-            return float(value.replace('s', ''))
+            # 提取数字部分，处理可能有空格的情况
+            num_str = re.search(r'[\d.]+', value)
+            if num_str:
+                return float(num_str.group()) / 1000
+        elif 's' in value and 'ms' not in value:
+            # 确保不是ms的情况
+            num_str = re.search(r'[\d.]+', value)
+            if num_str:
+                return float(num_str.group())
         
         # 默认尝试转换为浮点数
         try:
             return float(value)
         except ValueError:
             return 0.0
-
 
     def get_max(self, field: str = "Max") -> Optional[Dict[str, str]]:
         """获取指定字段的最大值"""
@@ -156,7 +164,6 @@ class LegendTable:
             
         return max(parsed_data, key=lambda x: self.convert_to_comparable(x[field]))
 
-
     def get_max_numeric(self, field: str = "Max") -> Optional[float]:
         """获取指定字段的最大值（纯数字）"""
         max_item = self.get_max(field)
@@ -164,15 +171,14 @@ class LegendTable:
             return None
         return round(self.convert_to_comparable(max_item[field]), 4)
 
-
     def get_mean_max(self) -> Optional[Dict[str, str]]:
         """获取Mean字段的最大值"""
         return self.get_max("Mean")
 
-
     def get_mean_max_numeric(self) -> Optional[float]:
         """获取Mean字段的最大值（纯数字）"""
         return self.get_max_numeric("Mean")
+
 
 
 if __name__ == "__main__":
