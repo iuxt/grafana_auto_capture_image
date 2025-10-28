@@ -28,3 +28,13 @@ docker run --platform linux/amd64 --rm \
     grafana_image_renderer:2025-05-13 /venv/bin/python3 -u main.py gw-service now-30d now
 ```
 
+
+面板增加注释
+默认截图，如果指定了 
+```bash
+# 默认全部截图，跳过截图
+screenshot: false
+
+# 解析并保存数据
+save_data: true
+```

@@ -39,6 +39,11 @@ dashboard_json = grafana.get_dashboard_json()
 panels = grafana.extract_panel_info(dashboard_json)
 
 result_file = '/tmp/result.txt'
+
+if not os.path.exists(result_file):
+    with open(result_file, 'w') as f:
+        pass  # 创建空文件
+
 for panel in panels:
     row_value = panel.get('row', None)
     row_value = '' if row_value is None else str(row_value)
