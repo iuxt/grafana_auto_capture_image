@@ -1,0 +1,16 @@
+{
+    "name": "长城",
+    "uid": "gw-service",
+    "panels": [
+        {
+            "title": "节点CPU使用率",
+            "id": "2081",
+            "expr": "1 - avg(irate(node_cpu_seconds_total{env=\"prod\",project=\"gw\",k8s=\"gw\",mode=\"idle\"}[3m])) by (instance)"
+        },
+        {
+            "title": "节点磁盘使用率",
+            "id": "23763571999",
+            "expr": "1-(node_filesystem_free_bytes{env=\"prod\",project=\"gw\",fstype=~\"ext4|xfs|ext3\",mountpoint=~\"/|/opt/docker\",k8s=\"gw\"} / node_filesystem_size_bytes{env=\"prod\",project=\"gw\",fstype=~\"ext4|xfs|ext3\",mountpoint=~\"/|/opt/docker\",k8s=\"gw\"})"
+        }
+    ]
+}
