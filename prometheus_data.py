@@ -103,7 +103,7 @@ def get_max_value_with_labels(data):
 
 
 if __name__ == '__main__':
-    expr = 'sum(increase(http_method_duration_seconds_count{project=~"gw",k8s="gw",service="idk-mob-sdk-server"}[1m])) by ( run)'
+    expr = 'sum(increase(http_method_duration_seconds_count{project=~"gw",k8s="gw",service="idk-mob-sdk-server"}[1m])) by ( service )'
     start = '2026-01-01T00:00:00Z'
     end = '2026-01-01T23:00:00Z'
     

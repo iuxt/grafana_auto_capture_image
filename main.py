@@ -11,7 +11,7 @@ load_dotenv()
 url = os.getenv("GF_URL")
 api_key = os.getenv("GF_API_KEY")
 uid = 'df9c7ijyb55vke'
-date_from = "2025-12-02T00:00:00.000Z"
+date_from = "2026-01-02T00:00:00.000Z"
 date_to = "2026-01-03T00:00:00.000Z"
 username = os.getenv("GF_USER")
 password = os.getenv("GF_PASSWORD")
@@ -33,7 +33,13 @@ for panel in extract_panel_info:
     for expr in panel['expr']:
         print(expr)
         # prometheus 查询这个语句
-        pass
+        print(utils.convert_time_format(date_from), utils.convert_time_format(date_to))
+        data = prometheus_data.query_prometheus(expr, utils.convert_time_format(date_from), utils.convert_time_format(date_to))
+        max_info = prometheus_data.get_max_value_with_labels(data)
+        if max_info['max_value'] is not None:
+            print(max_info)
+            print(f"最大值: {max_info['max_value_formatted']}")
+            print(f"最大值出现时间: {max_info['timestamp_formatted']}")
     dashboard.render_panel(date_from=date_from, date_to=date_to, panel_id=panel['id'], panel_name=panel['title'])
 
 dashboard.driver.quit()
