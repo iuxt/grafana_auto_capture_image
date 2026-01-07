@@ -1,0 +1,1 @@
+docker build --platform linux/amd64 . -t grafana_image_renderer:2025-05-13
