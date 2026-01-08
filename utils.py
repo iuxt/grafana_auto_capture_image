@@ -18,6 +18,9 @@ def custom_yes_data_now_data(days=1):
 def convert_time_format(time_str):
     """
     将带毫秒的ISO 8601时间格式转换为不带毫秒的格式
+    Grafana需要使用 带 ms 的格式
+    Prometheus使用不带 ms 的格式
+    
     输入: 2025-12-02T00:00:00.000Z
     输出: 2025-12-02T00:00:00Z
     """

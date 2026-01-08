@@ -73,9 +73,19 @@ with open('gw_panel_config.json', 'r') as f:
         expr = panel['expr']
         # prometheus 查询这个语句
         data = prometheus_data.query_prometheus(expr, utils.convert_time_format(date_from), utils.convert_time_format(date_to))
-        max_info = prometheus_data.get_max_value_with_labels(data)
-        print(f"面板{panel_name}的最大值信息:", max_info)
-        if max_info['max_value'] is not None:
-            print(max_info)
-            print(f"最大值: {max_info['max_value_formatted']}")
-            print(f"最大值出现时间: {max_info['timestamp_formatted']}")
+        get_value = panel.get('get_value', 'max')
+        if get_value == 'max':
+            max_info = prometheus_data.get_max_value_with_labels(data)
+            print(f"面板{panel_name}的最大值信息:", max_info)
+            if max_info['max_value'] is not None:
+                print(max_info)
+                print(f"最大值: {max_info['max_value_formatted']}")
+                print(f"最大值出现时间: {max_info['timestamp_formatted']}")
+                max_info = prometheus_data.get_max_value_with_labels(data)
+                print(f"面板{panel_name}的最大值信息:", max_info)
+        elif get_value == 'min':
+            min_info = prometheus_data.get_min_value_with_labels(data)
+            print(f"面板{panel_name}的最小值信息:", min_info)
+        elif get_value == 'avg':
+            avg_info = prometheus_data.get_avg_value_with_labels(data)
+            print(f"面板{panel_name}的平均值信息:", avg_info)
