@@ -18,7 +18,6 @@ def query_prometheus(expr, start, end):
         'step': '1m'
     }
     response = requests.get(url, params=params)
-    print(response.url)
     return response.json()
 
 

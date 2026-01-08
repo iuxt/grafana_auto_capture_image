@@ -71,7 +71,6 @@ with open('gw_panel_config.json', 'r') as f:
         panel_id = panel['id']
         panel_name = panel['title']
         expr = panel['expr']
-        print(expr)
         # prometheus 查询这个语句
         data = prometheus_data.query_prometheus(expr, utils.convert_time_format(date_from), utils.convert_time_format(date_to))
         max_info = prometheus_data.get_max_value_with_labels(data)
