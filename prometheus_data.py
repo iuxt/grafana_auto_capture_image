@@ -1,12 +1,16 @@
+from dotenv import load_dotenv
 import requests
 from datetime import datetime
+import os
 
+
+load_dotenv()
 
 def query_prometheus(expr, start, end):
     """
     查询 prometheus 数据
     """
-    url = 'https://prometheus.test.com/api/v1/query_range'
+    url = os.getenv('PROMETHEUS_URL') + '/api/v1/query_range'
     params = {
         'query': expr,
         'start': start,
