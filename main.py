@@ -18,24 +18,6 @@ password = os.getenv("GF_PASSWORD")
 
 
 
-# 遍历面板信息，自动获取全部数据
-# grafana_api = grafana_api.GrafanaApi(url, api_key, uid)
-# extract_panel_info = grafana_api.extract_panel_info()
-# print(extract_panel_info)
-# for panel in extract_panel_info:
-#     for expr in panel['expr']:
-#         print(expr)
-#         # prometheus 查询这个语句
-#         print(utils.convert_time_format(date_from), utils.convert_time_format(date_to))
-#         data = prometheus_data.query_prometheus(expr, utils.convert_time_format(date_from), utils.convert_time_format(date_to))
-#         max_info = prometheus_data.get_max_value_with_labels(data)
-#         if max_info['max_value'] is not None:
-#             print(max_info)
-#             print(f"最大值: {max_info['max_value_formatted']}")
-#             print(f"最大值出现时间: {max_info['timestamp_formatted']}")
-#     chrome_obj.render_panel(date_from=date_from, date_to=date_to, panel_id=panel['id'], panel_name=panel['title'])
-
-
 # 从配置中读取，截图
 with open('gw_panel_config.json', 'r') as f:
     panel_config = json.load(f)
