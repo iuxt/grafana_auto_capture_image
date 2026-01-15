@@ -11,8 +11,8 @@ load_dotenv()
 
 url = os.getenv("GF_URL")
 api_key = os.getenv("GF_API_KEY")
-date_from = "2026-01-02T00:00:00.000Z"
-date_to = "2026-01-03T00:00:00.000Z"
+date_from = "2025-12-15T00:00:00.000Z"
+date_to = "2026-01-15T00:00:00.000Z"
 username = os.getenv("GF_USER")
 password = os.getenv("GF_PASSWORD")
 
@@ -61,7 +61,7 @@ with open('gw_panel_config.json', 'r') as f:
             print(f"面板{panel_name}的最大值信息:", max_info)
             if max_info['max_value'] is not None:
                 print(max_info)
-                print(f"最大值: {max_info['max_value_formatted']}")
+                print(f"最大值: {max_info['max_value']}")
                 print(f"最大值出现时间: {max_info['timestamp_formatted']}")
                 max_info = prometheus_data.get_max_value_with_labels(data)
                 print(f"面板{panel_name}的最大值信息:", max_info)

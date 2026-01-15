@@ -19,6 +19,12 @@
             "id": "23763571997",
             "expr": "(probe_ssl_earliest_cert_expiry{project=~\"gw\", env=~\"prod\", k8s=\"gw\"} - time() ) / 3600 /24",
             "get_value": "min"
+        },
+        {
+            "title": "数字钥匙HTTP访问量",
+            "id": "2",
+            "expr": "sum(increase(nginx_ingress_controller_requests{ project=~\"gw\", env=~\"prod\",k8s=\"gw\"}[1m])) by (ingress)",
+            "get_value": "max"
         }
     ]
 }

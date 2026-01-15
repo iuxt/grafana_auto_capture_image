@@ -11,13 +11,26 @@ def query_prometheus(expr, start, end):
     查询 prometheus 数据
     """
     url = os.getenv('PROMETHEUS_URL') + '/api/v1/query_range'
+
+    # 根据查询时间范围调整 step 参数
+    end_dt = datetime.strptime(end, '%Y-%m-%dT%H:%M:%SZ')
+    start_dt = datetime.strptime(start, '%Y-%m-%dT%H:%M:%SZ')
+    print(f"查询时间范围: {end_dt - start_dt}")
+    if (end_dt - start_dt).days > 15:
+        step = '6h'
+    elif (end_dt - start_dt).days > 5:
+        step = '1h'
+    else:
+        step = '5m'
+    print(f"设置 step 参数: {step}")
     params = {
         'query': expr,
         'start': start,
         'end': end,
-        'step': '1m'
+        'step': step
     }
     response = requests.get(url, params=params)
+    print(f"step: {step}")
     return response.json()
 
 
@@ -32,7 +45,6 @@ def get_max_value_with_labels(data):
         dict: 包含最大值及对应标签信息的字典，格式如下：
             {
                 'max_value': float,        # 最大值
-                'max_value_formatted': str, # 格式化的最大值
                 'labels': dict,            # 对应的标签信息
                 'timestamp': float,        # 最大值出现的时间戳
                 'timestamp_formatted': str, # 格式化的时间戳
@@ -42,7 +54,6 @@ def get_max_value_with_labels(data):
     # 初始化结果
     result = {
         'max_value': None,
-        'max_value_formatted': None,
         'labels': None,
         'timestamp': None,
         'timestamp_formatted': None,
@@ -99,7 +110,6 @@ def get_max_value_with_labels(data):
     if max_value_info:
         result.update(max_value_info)
         # 格式化输出
-        result['max_value_formatted'] = f"{result['max_value']:.6f}"
         result['timestamp_formatted'] = datetime.fromtimestamp(result['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
     
     return result
@@ -116,7 +126,6 @@ def get_min_value_with_labels(data):
         dict: 包含最小值及对应标签信息的字典，格式如下：
             {
                 'min_value': float,        # 最小值
-                'min_value_formatted': str, # 格式化的最小值
                 'labels': dict,            # 对应的标签信息
                 'timestamp': float,        # 最小值出现的时间戳
                 'timestamp_formatted': str, # 格式化的时间戳
@@ -126,7 +135,6 @@ def get_min_value_with_labels(data):
     # 初始化结果
     result = {
         'min_value': None,
-        'min_value_formatted': None,
         'labels': None,
         'timestamp': None,
         'timestamp_formatted': None,
@@ -183,7 +191,6 @@ def get_min_value_with_labels(data):
     if min_value_info:
         result.update(min_value_info)
         # 格式化输出
-        result['min_value_formatted'] = f"{result['min_value']:.6f}"
         result['timestamp_formatted'] = datetime.fromtimestamp(result['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
     
     return result
@@ -200,7 +207,6 @@ def get_avg_value_with_labels(data):
         dict: 包含平均值及相关信息的字典，格式如下：
             {
                 'avg_value': float,        # 平均值
-                'avg_value_formatted': str, # 格式化的平均值
                 'total_samples': int,      # 有效样本数量
                 'metrics': list            # 所有metric信息
             }
@@ -208,7 +214,6 @@ def get_avg_value_with_labels(data):
     # 初始化结果
     result = {
         'avg_value': None,
-        'avg_value_formatted': None,
         'total_samples': 0,
         'metrics': []
     }
@@ -261,7 +266,6 @@ def get_avg_value_with_labels(data):
     if sample_count > 0:
         avg_value = total_value / sample_count
         result['avg_value'] = avg_value
-        result['avg_value_formatted'] = f"{avg_value:.6f}"
         result['total_samples'] = sample_count
     
     return result
@@ -270,7 +274,7 @@ def get_avg_value_with_labels(data):
 
 if __name__ == '__main__':
     expr = 'sum(increase(http_method_duration_seconds_count{project=~"gw",k8s="gw",service="idk-mob-sdk-server"}[1m])) by ( service )'
-    start = '2026-01-01T00:00:00Z'
+    start = '2025-12-17T00:00:00Z'
     end = '2026-01-01T23:00:00Z'
     
     # 查询数据
@@ -282,7 +286,7 @@ if __name__ == '__main__':
     # 打印结果
     print("\n===== 最大值查询结果 =====")
     if max_info['max_value'] is not None:
-        print(f"最大值: {max_info['max_value_formatted']}")
+        print(f"最大值: {max_info['max_value']}")
         print(f"最大值出现时间: {max_info['timestamp_formatted']}")
         print(f"对应的标签信息: {max_info['labels']}")
         print(f"完整的metric信息: {max_info['metric']}")
@@ -295,7 +299,7 @@ if __name__ == '__main__':
     # 打印结果
     print("\n===== 最小值查询结果 =====")
     if min_info['min_value'] is not None:
-        print(f"最小值: {min_info['min_value_formatted']}")
+        print(f"最小值: {min_info['min_value']}")
         print(f"最小值出现时间: {min_info['timestamp_formatted']}")
         print(f"对应的标签信息: {min_info['labels']}")
         print(f"完整的metric信息: {min_info['metric']}")
@@ -308,7 +312,7 @@ if __name__ == '__main__':
     # 打印结果
     print("\n===== 平均值查询结果 =====")
     if avg_info['avg_value'] is not None:
-        print(f"平均值: {avg_info['avg_value_formatted']}")
+        print(f"平均值: {avg_info['avg_value']}")
         print(f"有效样本数量: {avg_info['total_samples']}")
         print(f"相关metric数量: {len(avg_info['metrics'])}")
     else:
