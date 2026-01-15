@@ -25,6 +25,12 @@
             "id": "2",
             "expr": "sum(increase(nginx_ingress_controller_requests{ project=~\"gw\", env=~\"prod\",k8s=\"gw\"}[1m])) by (ingress)",
             "get_value": "max"
+        },
+        {
+            "title": "数字钥匙HTTP服务-延迟响应水位线90分位",
+            "id": "16",
+            "expr": "histogram_quantile(0.90, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{project=~\"gw\", status!=\"404\",status!=\"500\",k8s=\"gw\"}[1m])) by (le, ingress))",
+            "get_value": "max"
         }
     ]
 }

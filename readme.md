@@ -1,7 +1,5 @@
 ## 自动截图Grafana
 
-![](/images/run.gif)
-
 
 ## 准备工作
 
