@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 from email.utils import formataddr
 import os
 from dotenv import load_dotenv 
-import sys
+import tempfile
 from email import encoders
 import zipfile
 from email.mime.multipart import MIMEMultipart
@@ -14,11 +14,18 @@ from email.mime.base import MIMEBase
 
 # 打包文件
 def zip_files(source_dir, zip_filename):
+    """
+    zip_files 的 Docstring
+    
+    :param source_dir: 要打包的目录
+    :param zip_filename: 打包后的文件名
+    """
     with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for foldername, subfolders, filenames in os.walk(source_dir):
             for filename in filenames:
                 filepath = os.path.join(foldername, filename)
                 zipf.write(filepath, os.path.relpath(filepath, source_dir))
+
 
 # 发送邮件
 def send_email(zip_filename, to_email, subject=None, body=None, from_email=None, password=None, smtp_server=None, smtp_port=465):
@@ -53,10 +60,18 @@ def send_email(zip_filename, to_email, subject=None, body=None, from_email=None,
     except Exception as e:
         print(f"Failed to send email: {e}")
 
+
+def get_email_content():
+    return "巡检报告详见附件，请查收。"
+
+
+
 if __name__ == "__main__":
-    source_dir = "/tmp/output"
-    zip_filename = "/tmp/你output.zip"
-    
+    source_dir = "./screenshots"
+    temp_dir = tempfile.mkdtemp()
+    zip_filename = os.path.join(temp_dir, "output.zip")
+    print(f"Temporary zip file will be created at: {zip_filename}")
+
     # 加载环境变量
     load_dotenv('.env')
     to_email = os.getenv('MAIL_RECEIVERS')
@@ -68,13 +83,8 @@ if __name__ == "__main__":
     # 打包文件
     zip_files(source_dir, zip_filename)
 
-    report_filename = '/tmp/result.txt'
-    try:
-        with open(report_filename, 'r', encoding='utf-8') as f:
-            body = f.read()
-    except FileNotFoundError:
-        print(f"Error: Report file {report_filename} not found.")
-        sys.exit(1)
+    body = get_email_content()
 
     # 发送邮件
-    send_email(zip_filename, to_email, subject='巡检报告', body=body, from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
+    send_email(zip_filename=zip_filename, to_email=to_email, subject='巡检报告', body=body, 
+               from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
