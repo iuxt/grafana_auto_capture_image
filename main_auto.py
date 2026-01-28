@@ -8,14 +8,13 @@ import json
 
 
 load_dotenv()
-
 url = os.getenv("GF_URL")
 api_key = os.getenv("GF_API_KEY")
-date_from = "2026-01-02T00:00:00.000Z"
-date_to = "2026-01-03T00:00:00.000Z"
+date_from = os.getenv("DATE_FROM")
+date_to = os.getenv("DATE_TO")
 username = os.getenv("GF_USER")
 password = os.getenv("GF_PASSWORD")
-uid = "chery-cce-service"
+uid = os.getenv("UID")
 
 
 # 打开浏览器
@@ -23,8 +22,8 @@ chrome_obj = renderer_image.GrafanaDashboard(url, username, password, uid )
 chrome_obj.init_chromium(debug=os.getenv("CHROME_DEBUG"))
 
 # 遍历面板信息，自动获取全部数据
-grafana_api = grafana_api.GrafanaApi(url, api_key, uid)
-extract_panel_info = grafana_api.extract_panel_info()
+grafana_obj = grafana_api.GrafanaApi(url, api_key, uid)
+extract_panel_info = grafana_obj.extract_panel_info()
 print(extract_panel_info)
 for panel in extract_panel_info:
     for expr in panel['expr']:

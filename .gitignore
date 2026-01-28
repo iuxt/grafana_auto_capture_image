@@ -9,3 +9,4 @@ chromedriver
 .DS_Store
 dashboard.json
 .venv/
+*.log
