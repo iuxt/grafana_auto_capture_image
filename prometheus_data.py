@@ -12,9 +12,10 @@ def query_prometheus(expr, start, end):
     """
     url = os.getenv('PROMETHEUS_URL') + '/api/v1/query_range'
 
-    # 根据查询时间范围调整 step 参数
     end_dt = datetime.strptime(end, '%Y-%m-%dT%H:%M:%SZ')
     start_dt = datetime.strptime(start, '%Y-%m-%dT%H:%M:%SZ')
+
+    # 根据查询时间范围调整 step 参数
     print(f"查询时间范围: {end_dt - start_dt}")
     if (end_dt - start_dt).days > 15:
         step = '6h'
@@ -23,6 +24,11 @@ def query_prometheus(expr, start, end):
     else:
         step = '5m'
     print(f"设置 step 参数: {step}")
+
+    # 根据时间范围替换range变量
+    if '$__range' in expr:
+        expr = expr.replace('$__range', f'{(end_dt - start_dt).days}d')
+
     params = {
         'query': expr,
         'start': start,
@@ -273,7 +279,7 @@ def get_avg_value_with_labels(data):
 
 
 if __name__ == '__main__':
-    expr = 'sum(increase(http_method_duration_seconds_count{project=~"gw",k8s="gw",service="idk-mob-sdk-server"}[1m])) by ( service )'
+    expr = 'sum(increase(http_method_duration_seconds_count{project=~"gw",k8s="gw",service="idk-mob-sdk-server"}[$__range])) by ( service )'
     start = '2025-12-17T00:00:00Z'
     end = '2026-01-01T23:00:00Z'
     
