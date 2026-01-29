@@ -1,1 +1,1 @@
-docker build --platform linux/amd64 . -t grafana_image_renderer:2025-05-13
+docker build --platform linux/amd64 . -t registry.cn-hangzhou.aliyuncs.com/iuxt/grafana_auto_capture_image:20260129
