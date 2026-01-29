@@ -1,5 +1,4 @@
 from dotenv import load_dotenv
-import grafana_api
 import prometheus_data
 import renderer_image
 import utils
@@ -11,8 +10,8 @@ load_dotenv()
 
 url = os.getenv("GF_URL")
 api_key = os.getenv("GF_API_KEY")
-date_from = "2025-12-15T00:00:00.000Z"
-date_to = "2026-01-15T00:00:00.000Z"
+date_from = str(utils.convert_time_format(os.getenv("DATE_FROM")))
+date_to = str(utils.convert_time_format(os.getenv("DATE_TO")))
 username = os.getenv("GF_USER")
 password = os.getenv("GF_PASSWORD")
 
@@ -54,7 +53,7 @@ with open('gw_panel_config.json', 'r') as f:
         panel_name = panel['title']
         expr = panel['expr']
         # prometheus 查询这个语句
-        data = prometheus_data.query_prometheus(expr, utils.convert_time_format(date_from), utils.convert_time_format(date_to))
+        data = prometheus_data.query_prometheus(expr, utils.convert_to_prometheus_format(date_from), utils.convert_to_prometheus_format(date_to))
         get_value = panel.get('get_value', 'max')
         if get_value == 'max':
             max_info = prometheus_data.get_max_value_with_labels(data)

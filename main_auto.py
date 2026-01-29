@@ -6,14 +6,13 @@ import utils
 import os
 import json
 import send_mail, tempfile
-import timestamp_convert
 
 
 load_dotenv()
 url = os.getenv("GF_URL")
 api_key = os.getenv("GF_API_KEY")
-date_from = str(timestamp_convert.convert_time_format(os.getenv("DATE_FROM")))
-date_to = str(timestamp_convert.convert_time_format(os.getenv("DATE_TO")))
+date_from = str(utils.convert_time_format(os.getenv("DATE_FROM")))
+date_to = str(utils.convert_time_format(os.getenv("DATE_TO")))
 username = os.getenv("GF_USER")
 password = os.getenv("GF_PASSWORD")
 uid = os.getenv("UID")
@@ -31,8 +30,8 @@ for panel in extract_panel_info:
     for expr in panel['expr']:
         print(expr)
         # prometheus 查询这个语句
-        print(utils.convert_time_format(date_from), utils.convert_time_format(date_to))
-        data = prometheus_data.query_prometheus(expr, utils.convert_time_format(date_from), utils.convert_time_format(date_to))
+        print(utils.convert_to_prometheus_format(date_from), utils.convert_to_prometheus_format(date_to))
+        data = prometheus_data.query_prometheus(expr, utils.convert_to_prometheus_format(date_from), utils.convert_to_prometheus_format(date_to))
 
         max_info = prometheus_data.get_max_value_with_labels(data)
         if max_info['max_value'] is not None:
