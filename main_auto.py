@@ -18,6 +18,22 @@ password = os.getenv("GF_PASSWORD")
 uid = os.getenv("UID")
 
 
+# 转换时间格式
+from datetime import datetime, timedelta
+import pytz
+
+
+utc_now = datetime.now(pytz.UTC)
+if date_from == "now/M":
+    # 计算本月第一天（UTC时间 00:00:00.000）
+    date_from = utc_now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+if date_to == "now":
+    # 当前时间格式化（毫秒固定为000，与示例格式一致）
+    date_to = utc_now.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+
+
 # 打开浏览器
 chrome_obj = renderer_image.GrafanaDashboard(url, username, password, uid )
 chrome_obj.init_chromium(debug=os.getenv("CHROME_DEBUG"))
