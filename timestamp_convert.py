@@ -12,7 +12,7 @@ def convert_time_format(time_str):
     if time_str == "now/M":
         # 计算本月第一天（UTC时间 00:00:00.000）
         date = utc_now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        return date
+        return date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
     elif time_str == "now": 
         # 当前时间格式化（毫秒固定为000，与示例格式一致）
         date = utc_now.strftime("%Y-%m-%dT%H:%M:%S.000Z")
@@ -34,3 +34,5 @@ if __name__ == "__main__":
     print(convert_time_format("now"))     # 当前时间
     print(convert_time_format("now-7d"))  # 7天前的时间
     print(convert_time_format("2023-10-01T00:00:00.000Z"))  # 原样返回
+
+    print(type(convert_time_format("now/M")))
