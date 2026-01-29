@@ -6,32 +6,17 @@ import utils
 import os
 import json
 import send_mail, tempfile
+import timestamp_convert
 
 
 load_dotenv()
 url = os.getenv("GF_URL")
 api_key = os.getenv("GF_API_KEY")
-date_from = os.getenv("DATE_FROM")
-date_to = os.getenv("DATE_TO")
+date_from = timestamp_convert.convert_time_format(os.getenv("DATE_FROM"))
+date_to = timestamp_convert.convert_time_format(os.getenv("DATE_TO"))
 username = os.getenv("GF_USER")
 password = os.getenv("GF_PASSWORD")
 uid = os.getenv("UID")
-
-
-# 转换时间格式
-from datetime import datetime, timedelta
-import pytz
-
-
-utc_now = datetime.now(pytz.UTC)
-if date_from == "now/M":
-    # 计算本月第一天（UTC时间 00:00:00.000）
-    date_from = utc_now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
-if date_to == "now":
-    # 当前时间格式化（毫秒固定为000，与示例格式一致）
-    date_to = utc_now.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-
 
 
 # 打开浏览器
