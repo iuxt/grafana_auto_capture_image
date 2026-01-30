@@ -11,8 +11,8 @@ import send_mail, tempfile
 load_dotenv()
 url = os.getenv("GF_URL")
 api_key = os.getenv("GF_API_KEY")
-date_from = str(utils.convert_time_format(os.getenv("DATE_FROM")))
-date_to = str(utils.convert_time_format(os.getenv("DATE_TO")))
+date_from = utils.convert_time_format(os.getenv("DATE_FROM"))
+date_to = utils.convert_time_format(os.getenv("DATE_TO"))
 username = os.getenv("GF_USER")
 password = os.getenv("GF_PASSWORD")
 uid = os.getenv("UID")
@@ -49,24 +49,4 @@ for panel in extract_panel_info:
 chrome_obj.driver.quit()
 
 # 发送邮件
-source_dir = "./screenshots"
-temp_dir = tempfile.mkdtemp()
-zip_filename = os.path.join(temp_dir, "output.zip")
-print(f"Temporary zip file will be created at: {zip_filename}")
-
-# 加载环境变量
-load_dotenv('.env')
-to_email = os.getenv('MAIL_RECEIVERS')
-from_email = os.getenv('EMAIL_USER')
-password = os.getenv('EMAIL_PASSWORD')
-smtp_server = os.getenv('SMTP_SERVER')
-smtp_port = int(os.getenv('SMTP_PORT', 465))
-
-# 打包文件
-send_mail.zip_files(source_dir, zip_filename)
-
-body = send_mail.get_email_content()
-
-# 发送邮件
-send_mail.send_email(zip_filename=zip_filename, to_email=to_email, subject='巡检报告', body=body, 
-            from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
+send_mail.send_email_now(name="自动巡检报告")

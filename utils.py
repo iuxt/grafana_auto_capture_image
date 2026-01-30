@@ -7,6 +7,12 @@ utc_now = datetime.now(pytz.UTC)
 
 
 def convert_time_format(time_str):
+    """
+    convert_time_format 的 Docstring
+    将类似 "now/M", "now", "now-7d" 等格式的时间字符串转换为具体的 UTC 时间字符串。给Grafana使用
+    如果输入的时间字符串不符合上述格式，则直接返回原字符串。
+    :param time_str: 说明
+    """
     if time_str == "now/M":
         # 计算本月第一天（UTC时间 00:00:00.000）
         date = utc_now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -26,19 +32,20 @@ def convert_time_format(time_str):
         return time_str
     
 
-
-def custom_yes_data_now_data(days=1):
+def get_year_month(time_str):
     """
-    专门给 prometheus 使用
-    获取前几天的时间 days=2 默认生产2天前 2022-10-09T00:00:00.781Z
-    获取当天时间 2022-10-11T12:59:59.781Z
-
+    get_year_month 的 Docstring
+    从时间字符串中提取年月部分（YYYY-MM）
+    :param time_str: 时间字符串，格式为 "2025-12-02T00:00:00.000Z"
+    :return: 年月字符串，格式为 "2025-12"
     """
-    now = datetime.now()
-    now_data = now.strftime('%Y-%m-%dT%H:%M:00.781Z')
-    yes_data = now + timedelta(days=-days)
-    yes_data = yes_data.strftime('%Y-%m-%dT%H:%M:00.781Z')
-    return yes_data, now_data
+    if not time_str:
+        return ""
+    
+    # 使用 datetime 解析时间字符串，提取年月部分
+    date = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.000Z")
+    return date.strftime("%Y-%m")
+
 
 
 def convert_to_prometheus_format(time_str):

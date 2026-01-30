@@ -4,14 +4,16 @@ import renderer_image
 import utils
 import os
 import json
+import tempfile
+import send_mail
 
 
 load_dotenv()
 
 url = os.getenv("GF_URL")
 api_key = os.getenv("GF_API_KEY")
-date_from = str(utils.convert_time_format(os.getenv("DATE_FROM")))
-date_to = str(utils.convert_time_format(os.getenv("DATE_TO")))
+date_from = utils.convert_time_format(os.getenv("DATE_FROM"))
+date_to = utils.convert_time_format(os.getenv("DATE_TO"))
 username = os.getenv("GF_USER")
 password = os.getenv("GF_PASSWORD")
 
@@ -70,3 +72,7 @@ with open('gw_panel_config.json', 'r') as f:
         elif get_value == 'avg':
             avg_info = prometheus_data.get_avg_value_with_labels(data)
             print(f"面板{panel_name}的平均值信息:", avg_info)
+
+
+# 发邮件
+send_mail.send_email_now(name=name)

@@ -11,6 +11,8 @@ from email import encoders
 import zipfile
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
+import utils
+
 
 # 打包文件
 def zip_files(source_dir, zip_filename):
@@ -65,11 +67,10 @@ def get_email_content():
     return "巡检报告详见附件，请查收。"
 
 
-
-if __name__ == "__main__":
+def send_email_now(name=""):
     source_dir = "./screenshots"
     temp_dir = tempfile.mkdtemp()
-    zip_filename = os.path.join(temp_dir, "output.zip")
+    zip_filename = os.path.join(temp_dir, name + "_巡检报告_" + utils.get_year_month(os.getenv("DATE_FROM")) + ".zip")
     print(f"Temporary zip file will be created at: {zip_filename}")
 
     # 加载环境变量
@@ -88,3 +89,7 @@ if __name__ == "__main__":
     # 发送邮件
     send_email(zip_filename=zip_filename, to_email=to_email, subject='巡检报告', body=body, 
                from_email=from_email, password=password, smtp_server=smtp_server, smtp_port=smtp_port)
+
+
+if __name__ == "__main__":
+    send_email_now()
