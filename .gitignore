@@ -10,3 +10,4 @@ chromedriver
 dashboard.json
 .venv/
 *.log
+monitor_data.json

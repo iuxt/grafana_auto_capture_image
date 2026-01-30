@@ -72,7 +72,7 @@ with open('faw_panel_config.json', 'r') as f:
             all_data.append(monitor_value)
 
     # 一次性写入所有数据到文件，移出循环
-    with open(f'1.json', 'w', encoding="utf-8") as mf:
+    with open(f'monitor_data.json', 'w', encoding="utf-8") as mf:
         json.dump(all_data, mf, indent=4, ensure_ascii=False)
 
 # 发邮件
