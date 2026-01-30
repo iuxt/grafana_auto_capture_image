@@ -16,11 +16,11 @@ date_from = utils.convert_time_format(os.getenv("DATE_FROM"))
 date_to = utils.convert_time_format(os.getenv("DATE_TO"))
 username = os.getenv("GF_USER")
 password = os.getenv("GF_PASSWORD")
-
+grafana_config = "grafana_config/config.json"
 
 
 # 从配置中读取，截图
-with open('faw_panel_config.json', 'r') as f:
+with open(grafana_config, 'r') as f:
     panel_config = json.load(f)
 
     uid = panel_config['uid']
@@ -39,11 +39,8 @@ with open('faw_panel_config.json', 'r') as f:
     chrome_obj.driver.quit()
 
 
-
-
-
 # 从配置中读取，取监控数据
-with open('faw_panel_config.json', 'r') as f:
+with open(grafana_config, 'r') as f:
     panel_config = json.load(f)
 
     uid = panel_config['uid']
@@ -74,6 +71,7 @@ with open('faw_panel_config.json', 'r') as f:
     # 一次性写入所有数据到文件，移出循环
     with open(f'monitor_data.json', 'w', encoding="utf-8") as mf:
         json.dump(all_data, mf, indent=4, ensure_ascii=False)
+
 
 # 发邮件
 send_mail.send_email_now(name=name)
