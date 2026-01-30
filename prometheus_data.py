@@ -16,18 +16,18 @@ def query_prometheus(expr, start, end):
     start_dt = datetime.strptime(start, '%Y-%m-%dT%H:%M:%SZ')
 
     # 根据查询时间范围调整 step 参数
-    print(f"查询时间范围: {end_dt - start_dt}")
     if (end_dt - start_dt).days > 15:
         step = '6h'
     elif (end_dt - start_dt).days > 5:
         step = '1h'
     else:
         step = '5m'
-    print(f"设置 step 参数: {step}")
 
     # 根据时间范围替换range变量
     if '$__range' in expr:
         expr = expr.replace('$__range', f'{(end_dt - start_dt).days}d')
+
+    print(f"查询 Prometheus: {expr}, 开始时间: {start}, 结束时间: {end}, 查询时间范围: {end_dt - start_dt}, step: {step}, 设置 step 参数: {step}")
 
     params = {
         'query': expr,
@@ -36,7 +36,6 @@ def query_prometheus(expr, start, end):
         'step': step
     }
     response = requests.get(url, params=params)
-    print(f"step: {step}")
     return response.json()
 
 
@@ -54,7 +53,6 @@ def get_max_value_with_labels(data):
                 'labels': dict,            # 对应的标签信息
                 'timestamp': float,        # 最大值出现的时间戳
                 'timestamp_formatted': str, # 格式化的时间戳
-                'metric': dict             # 完整的metric信息
             }
     """
     # 初始化结果
@@ -62,8 +60,7 @@ def get_max_value_with_labels(data):
         'max_value': None,
         'labels': None,
         'timestamp': None,
-        'timestamp_formatted': None,
-        'metric': None
+        'timestamp_formatted': None
     }
     
     # 数据验证
@@ -81,8 +78,7 @@ def get_max_value_with_labels(data):
     # 遍历所有查询结果
     for item in data['data']['result']:
         # 获取metric信息和标签
-        metric = item.get('metric', {})
-        labels = metric.copy()
+        labels = item.get('metric', {})
         
         # 遍历时间序列数据
         for value in item.get('values', []):
@@ -104,8 +100,7 @@ def get_max_value_with_labels(data):
                     max_value_info = {
                         'max_value': current_value,
                         'labels': labels,
-                        'timestamp': timestamp,
-                        'metric': metric
+                        'timestamp': timestamp
                     }
                     
             except (ValueError, TypeError) as e:
@@ -135,7 +130,6 @@ def get_min_value_with_labels(data):
                 'labels': dict,            # 对应的标签信息
                 'timestamp': float,        # 最小值出现的时间戳
                 'timestamp_formatted': str, # 格式化的时间戳
-                'metric': dict             # 完整的metric信息
             }
     """
     # 初始化结果
@@ -143,8 +137,7 @@ def get_min_value_with_labels(data):
         'min_value': None,
         'labels': None,
         'timestamp': None,
-        'timestamp_formatted': None,
-        'metric': None
+        'timestamp_formatted': None
     }
     
     # 数据验证
@@ -162,8 +155,7 @@ def get_min_value_with_labels(data):
     # 遍历所有查询结果
     for item in data['data']['result']:
         # 获取metric信息和标签
-        metric = item.get('metric', {})
-        labels = metric.copy()
+        labels = item.get('metric', {})
         
         # 遍历时间序列数据
         for value in item.get('values', []):
@@ -185,8 +177,7 @@ def get_min_value_with_labels(data):
                     min_value_info = {
                         'min_value': current_value,
                         'labels': labels,
-                        'timestamp': timestamp,
-                        'metric': metric
+                        'timestamp': timestamp
                     }
                     
             except (ValueError, TypeError) as e:
@@ -214,14 +205,13 @@ def get_avg_value_with_labels(data):
             {
                 'avg_value': float,        # 平均值
                 'total_samples': int,      # 有效样本数量
-                'metrics': list            # 所有metric信息
+                'labels': list            # 所有labels信息
             }
     """
     # 初始化结果
     result = {
         'avg_value': None,
-        'total_samples': 0,
-        'metrics': []
+        'total_samples': 0
     }
     
     # 数据验证
@@ -235,18 +225,10 @@ def get_avg_value_with_labels(data):
     
     total_value = 0.0
     sample_count = 0
-    metrics_set = set()
     
     # 遍历所有查询结果
     for item in data['data']['result']:
-        # 获取metric信息
-        metric = item.get('metric', {})
-        metric_key = tuple(sorted(metric.items()))
-        
-        if metric_key not in metrics_set:
-            metrics_set.add(metric_key)
-            result['metrics'].append(metric)
-        
+
         # 遍历时间序列数据
         for value in item.get('values', []):
             if not isinstance(value, list) or len(value) < 2:
@@ -295,7 +277,6 @@ if __name__ == '__main__':
         print(f"最大值: {max_info['max_value']}")
         print(f"最大值出现时间: {max_info['timestamp_formatted']}")
         print(f"对应的标签信息: {max_info['labels']}")
-        print(f"完整的metric信息: {max_info['metric']}")
     else:
         print("未找到有效数据")
     
@@ -308,7 +289,6 @@ if __name__ == '__main__':
         print(f"最小值: {min_info['min_value']}")
         print(f"最小值出现时间: {min_info['timestamp_formatted']}")
         print(f"对应的标签信息: {min_info['labels']}")
-        print(f"完整的metric信息: {min_info['metric']}")
     else:
         print("未找到有效数据")
     
@@ -320,6 +300,9 @@ if __name__ == '__main__':
     if avg_info['avg_value'] is not None:
         print(f"平均值: {avg_info['avg_value']}")
         print(f"有效样本数量: {avg_info['total_samples']}")
-        print(f"相关metric数量: {len(avg_info['metrics'])}")
     else:
         print("未找到有效数据")
+
+    print(max_info)
+    print(min_info)
+    print(avg_info)

@@ -20,7 +20,7 @@ password = os.getenv("GF_PASSWORD")
 
 
 # 从配置中读取，截图
-with open('gw_panel_config.json', 'r') as f:
+with open('faw_panel_config.json', 'r') as f:
     panel_config = json.load(f)
 
     uid = panel_config['uid']
@@ -43,11 +43,12 @@ with open('gw_panel_config.json', 'r') as f:
 
 
 # 从配置中读取，取监控数据
-with open('gw_panel_config.json', 'r') as f:
+with open('faw_panel_config.json', 'r') as f:
     panel_config = json.load(f)
 
     uid = panel_config['uid']
     name = panel_config['name']
+    all_data = []
 
     # 厂商里的每个面板
     for panel in panel_config['panels']:
@@ -58,21 +59,21 @@ with open('gw_panel_config.json', 'r') as f:
         data = prometheus_data.query_prometheus(expr, utils.convert_to_prometheus_format(date_from), utils.convert_to_prometheus_format(date_to))
         get_value = panel.get('get_value', 'max')
         if get_value == 'max':
-            max_info = prometheus_data.get_max_value_with_labels(data)
-            print(f"面板{panel_name}的最大值信息:", max_info)
-            if max_info['max_value'] is not None:
-                print(max_info)
-                print(f"最大值: {max_info['max_value']}")
-                print(f"最大值出现时间: {max_info['timestamp_formatted']}")
-                max_info = prometheus_data.get_max_value_with_labels(data)
-                print(f"面板{panel_name}的最大值信息:", max_info)
+            monitor_value = prometheus_data.get_max_value_with_labels(data)
         elif get_value == 'min':
-            min_info = prometheus_data.get_min_value_with_labels(data)
-            print(f"面板{panel_name}的最小值信息:", min_info)
+            monitor_value = prometheus_data.get_min_value_with_labels(data)
         elif get_value == 'avg':
-            avg_info = prometheus_data.get_avg_value_with_labels(data)
-            print(f"面板{panel_name}的平均值信息:", avg_info)
+            monitor_value = prometheus_data.get_avg_value_with_labels(data)
+        else:
+            monitor_value = None
+        
+        if monitor_value is not None:
+            monitor_value['panel_name'] = panel_name
+            all_data.append(monitor_value)
 
+    # 一次性写入所有数据到文件，移出循环
+    with open(f'1.json', 'w', encoding="utf-8") as mf:
+        json.dump(all_data, mf, indent=4, ensure_ascii=False)
 
 # 发邮件
 send_mail.send_email_now(name=name)

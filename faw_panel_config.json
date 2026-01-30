@@ -1,0 +1,105 @@
+{
+    "name": "奔腾",
+    "uid": "faw",
+    "panels": [
+        {
+            "title": "MySQL资源总览表",
+            "id": "2085",
+            "expr": "",
+            "get_value": ""
+        },
+        {
+            "title": "MySQL连接数百分比",
+            "id": "2100",
+            "expr": "mysql_info_schema_processlist_processes_by_user{env=~\"prod\",project=~\"faw\",k8s=\"faw\"}",
+            "get_value": "max"
+        },
+        {
+            "title": "MySQL每分钟慢查询数量",
+            "id": "2091",
+            "expr": "delta(mysql_global_status_slow_queries{env=~\"prod\",project=~\"faw\",k8s=\"faw\"}[1m])",
+            "get_value": "max"
+        },
+        {
+            "title": "MySQL表占用磁盘概览Top10",
+            "id": "2092",
+            "expr": "topk(10, sum(mysql_info_schema_table_size{env=~\"prod\",project=~\"faw\",k8s=\"faw\",component!=\"data_free\"}) by (schema, table)) > 0",
+            "get_value": "max"
+        },
+        {
+            "title": "MySQL表数据量Top10",
+            "id": "2093",
+            "expr": "topk(10, sum(mysql_info_schema_table_rows{env=~\"prod\",project=~\"faw\",k8s=\"faw\"}) by (schema, table)) > 0",
+            "get_value": "max"
+        },
+        {
+            "title": "服务器资源总览表",
+            "id": "2073",
+            "expr": "",
+            "get_value": ""
+        },
+        {
+            "title": "节点CPU使用率",
+            "id": "2081",
+            "expr": "1 - avg(irate(node_cpu_seconds_total{env=\"prod\",project=\"faw\",k8s=\"faw\",mode=\"idle\"}[3m])) by (instance)",
+            "get_value": "max"
+        },
+        {
+            "title": "节点平均负载",
+            "id": "2105",
+            "expr": "node_load1{project=~\"faw\", env=~\"prod\",k8s=\"faw\"}",
+            "get_value": "max"
+        },
+        {
+            "title": "节点磁盘使用率",
+            "id": "2106",
+            "expr": "1-(node_filesystem_free_bytes{env=\"prod\",project=\"faw\",fstype=~\"ext4|xfs|ext3\",mountpoint=~\"/|/opt/docker\",k8s=\"faw\"} / node_filesystem_size_bytes{env=\"prod\",project=\"faw\",fstype=~\"ext4|xfs|ext3\",mountpoint=~\"/|/opt/docker\",k8s=\"faw\"})",
+            "get_value": "max"
+        },
+        {
+            "title": "节点内存使用率",
+            "id": "2082",
+            "expr": "1 - (node_memory_MemAvailable_bytes{env=\"prod\",project=\"faw\",k8s=\"faw\"} / node_memory_MemTotal_bytes{env=\"prod\",project=\"faw\",k8s=\"faw\"})",
+            "get_value": "max"
+        },
+        {
+            "title": "SDK服务内存使用量",
+            "id": "2141",
+            "expr": "sum by(pod) (container_memory_rss{project=\"faw\",env=\"prod\",namespace=\"default\",k8s=\"faw\",name=~\"^k8s_.*|^[0-9a-z]{64}\"})",
+            "get_value": "max"
+        },
+        {
+            "title": "SDK服务重启次数",
+            "id": "2142",
+            "expr": "sum by (pod) (increase(kube_pod_container_status_restarts_total{project=\"faw\", namespace=\"default\",k8s=\"faw\" }[$__range]))",
+            "get_value": "max"
+        },
+
+        {
+            "title": "Redis 资源总览表",
+            "id": "2095",
+            "expr": "",
+            "get_value": ""
+        },
+        {
+            "title": "Redis Keys 过期情况分布",
+            "id": "2096",
+            "expr": "",
+            "get_value": ""
+        },
+        {   
+            "title": "Redis 每秒操作数",
+            "id": "2097",
+            "expr": "sum(irate(redis_commands_total{env=~\"prod\", project=\"faw\"} [2m])) by (cmd)",
+            "get_value": "max"
+        },
+        {   
+            "title": "Redis 内存使用率",
+            "id": "2099",
+            "expr": "redis_memory_used_bytes{env=~\"prod\", project=\"faw\"} / redis_memory_max_bytes{env=~\"prod\", project=\"faw\"}",
+            "get_value": "max"
+        }
+
+
+    ]
+}
