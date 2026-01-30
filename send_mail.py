@@ -90,6 +90,28 @@ def get_all_screenshots(screenshots_dir='./screenshots'):
     return screenshots
 
 
+def format_timestamp(timestamp_str):
+    """
+    格式化时间戳字符串为更易读的格式
+    
+    Args:
+        timestamp_str: 时间戳字符串，如 "2026-01-15T00:00:00.000Z"
+    Returns:
+        格式化后的时间字符串，如 "2026-01-15 00:00:00"
+    """
+    try:
+        # 移除末尾的 Z 和毫秒部分
+        if timestamp_str.endswith('Z'):
+            timestamp_str = timestamp_str[:-1]
+        
+        # 尝试解析 ISO 格式的时间
+        dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+    except Exception as e:
+        print(f"Error formatting timestamp {timestamp_str}: {e}")
+        return timestamp_str
+
+
 # 发送邮件
 def send_email(zip_filename, to_email, subject=None, body=None, from_email=None, password=None, smtp_server=None, smtp_port=465):
     # 设置邮件内容
@@ -150,6 +172,24 @@ def get_email_content(json_file='monitor_data.json', screenshots_dir='./screensh
     
     # 获取报告生成时间
     report_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    # 从环境变量获取时间范围
+    load_dotenv('.env')
+    date_from = os.getenv('DATE_FROM', '')
+    date_to = os.getenv('DATE_TO', '')
+    
+    # 格式化时间范围显示
+    time_range_display = "未设置时间范围"
+    if date_from and date_to:
+        formatted_from = format_timestamp(date_from)
+        formatted_to = format_timestamp(date_to)
+        time_range_display = f"{formatted_from} ~ {formatted_to}"
+    elif date_from:
+        formatted_from = format_timestamp(date_from)
+        time_range_display = f"从 {formatted_from} 开始"
+    elif date_to:
+        formatted_to = format_timestamp(date_to)
+        time_range_display = f"到 {formatted_to} 结束"
     
     # HTML模板
     html_template = f"""
@@ -237,6 +277,34 @@ def get_email_content(json_file='monitor_data.json', screenshots_dir='./screensh
                 font-size: 1.8rem;
                 font-weight: bold;
                 color: #333;
+            }}
+            
+            .time-range {{
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                text-align: center;
+                margin-top: 20px;
+                border-left: 4px solid #4CAF50;
+            }}
+            
+            .time-range h3 {{
+                color: #1a237e;
+                margin-bottom: 10px;
+                font-size: 0.9rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }}
+            
+            .time-range-value {{
+                font-size: 1.2rem;
+                font-weight: bold;
+                color: #333;
+                padding: 10px;
+                background: #f8f9fa;
+                border-radius: 4px;
+                margin-top: 10px;
             }}
             
             .panels {{
@@ -423,6 +491,11 @@ def get_email_content(json_file='monitor_data.json', screenshots_dir='./screensh
                 .panel-content {{
                     flex-direction: column;
                 }}
+                
+                .report-info {{
+                    flex-direction: column;
+                    gap: 10px;
+                }}
             }}
         </style>
     </head>
@@ -451,11 +524,7 @@ def get_email_content(json_file='monitor_data.json', screenshots_dir='./screensh
                     </div>
                     <div class="stat-box">
                         <h3>数据时间范围</h3>
-                        <div class="stat-value">
-                            {min([item.get('timestamp_formatted', '') for item in json_data if item.get('timestamp_formatted')], default='N/A')}<br>
-                            ~<br>
-                            {max([item.get('timestamp_formatted', '') for item in json_data if item.get('timestamp_formatted')], default='N/A')}
-                        </div>
+                        <div class="stat-value">{time_range_display}</div>
                     </div>
                 </div>
             </div>
@@ -572,6 +641,7 @@ def get_email_content(json_file='monitor_data.json', screenshots_dir='./screensh
             
             <div class="footer">
                 <p>本报告由系统监控平台自动生成</p>
+                <p>监控时间范围: {time_range_display}</p>
                 <p>如有任何异常指标，请及时联系相关技术人员处理</p>
                 <div class="report-info">
                     <div>数据源: Prometheus监控系统</div>
@@ -635,7 +705,6 @@ def send_email_now(name=""):
     print(f"Temporary zip file will be created at: {zip_filename}")
 
     # 加载环境变量
-    load_dotenv('.env')
     to_email = os.getenv('MAIL_RECEIVERS')
     from_email = os.getenv('EMAIL_USER')
     password = os.getenv('EMAIL_PASSWORD')
