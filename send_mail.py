@@ -14,6 +14,7 @@ from email.mime.base import MIMEBase
 import utils
 import json
 from datetime import datetime
+import base64
 
 
 # 打包文件
@@ -29,6 +30,64 @@ def zip_files(source_dir, zip_filename):
             for filename in filenames:
                 filepath = os.path.join(foldername, filename)
                 zipf.write(filepath, os.path.relpath(filepath, source_dir))
+
+
+def get_image_base64(image_path):
+    """
+    将图片转换为Base64编码
+    
+    Args:
+        image_path: 图片文件路径
+    Returns:
+        Base64编码的图片字符串
+    """
+    if not os.path.exists(image_path):
+        return None
+    
+    try:
+        with open(image_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        return encoded_string
+    except Exception as e:
+        print(f"Error encoding image {image_path}: {e}")
+        return None
+
+
+def get_all_screenshots(screenshots_dir='./screenshots'):
+    """
+    获取所有截图并转换为Base64格式
+    
+    Args:
+        screenshots_dir: 截图目录
+    Returns:
+        dict: {panel_name: base64_string}
+    """
+    screenshots = {}
+    
+    if not os.path.exists(screenshots_dir):
+        print(f"Warning: Screenshots directory {screenshots_dir} does not exist")
+        return screenshots
+    
+    for filename in os.listdir(screenshots_dir):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            panel_name = os.path.splitext(filename)[0]
+            image_path = os.path.join(screenshots_dir, filename)
+            base64_str = get_image_base64(image_path)
+            if base64_str:
+                # 根据文件扩展名确定MIME类型
+                ext = os.path.splitext(filename)[1].lower()
+                if ext == '.png':
+                    mime_type = 'png'
+                elif ext in ['.jpg', '.jpeg']:
+                    mime_type = 'jpeg'
+                elif ext == '.gif':
+                    mime_type = 'gif'
+                else:
+                    mime_type = 'png'
+                
+                screenshots[panel_name] = f"data:image/{mime_type};base64,{base64_str}"
+    
+    return screenshots
 
 
 # 发送邮件
@@ -65,18 +124,21 @@ def send_email(zip_filename, to_email, subject=None, body=None, from_email=None,
         print(f"Failed to send email: {e}")
 
 
-def get_email_content(json_file='monitor_data.json'):
+def get_email_content(json_file='monitor_data.json', screenshots_dir='./screenshots'):
     """
-    生成邮件内容的HTML报告
+    生成邮件内容的HTML报告，包含截图
     
     Args:
         json_file: 包含监控数据的JSON文件路径
+        screenshots_dir: 截图目录
     Returns:
         HTML内容字符串
     """
     with open(json_file, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
-
+    
+    # 获取所有截图
+    screenshots = get_all_screenshots(screenshots_dir)
 
     # 按panel_name分组数据
     grouped_data = {}
@@ -200,10 +262,49 @@ def get_email_content(json_file='monitor_data.json'):
                 font-size: 1.2rem;
             }}
             
+            .panel-content {{
+                display: flex;
+                flex-wrap: wrap;
+                gap: 30px;
+                margin-top: 20px;
+            }}
+            
             .metrics-grid {{
+                flex: 1;
+                min-width: 300px;
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
                 gap: 20px;
+            }}
+            
+            .screenshot-container {{
+                flex: 1;
+                min-width: 300px;
+                background: #f9f9f9;
+                border-radius: 8px;
+                padding: 20px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            }}
+            
+            .screenshot-title {{
+                font-size: 1.2rem;
+                color: #1a237e;
+                margin-bottom: 15px;
+                text-align: center;
+                font-weight: 600;
+            }}
+            
+            .screenshot {{
+                max-width: 100%;
+                height: auto;
+                border-radius: 6px;
+                box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+                border: 1px solid #eaeaea;
+                transition: transform 0.3s;
+            }}
+            
+            .screenshot:hover {{
+                transform: scale(1.02);
             }}
             
             .metric-card {{
@@ -300,12 +401,26 @@ def get_email_content(json_file='monitor_data.json'):
                 color: #888;
             }}
             
+            .no-screenshot {{
+                text-align: center;
+                padding: 40px 20px;
+                color: #888;
+                font-style: italic;
+                background: #f9f9f9;
+                border-radius: 6px;
+                border: 2px dashed #ddd;
+            }}
+            
             @media (max-width: 768px) {{
                 .metrics-grid {{
                     grid-template-columns: 1fr;
                 }}
                 
                 .summary-stats {{
+                    flex-direction: column;
+                }}
+                
+                .panel-content {{
                     flex-direction: column;
                 }}
             }}
@@ -329,6 +444,10 @@ def get_email_content(json_file='monitor_data.json'):
                     <div class="stat-box">
                         <h3>监控面板数量</h3>
                         <div class="stat-value">{len(grouped_data)}</div>
+                    </div>
+                    <div class="stat-box">
+                        <h3>截图数量</h3>
+                        <div class="stat-value">{len(screenshots)}</div>
                     </div>
                     <div class="stat-box">
                         <h3>数据时间范围</h3>
@@ -361,13 +480,35 @@ def get_email_content(json_file='monitor_data.json'):
         elif "重启" in panel_name:
             icon = "🔄"
         
+        # 检查是否有对应的截图
+        screenshot_html = ""
+        if panel_name in screenshots:
+            screenshot_html = f"""
+                <div class="screenshot-container">
+                    <div class="screenshot-title">📸 {panel_name} 监控截图</div>
+                    <img src="{screenshots[panel_name]}" alt="{panel_name} 截图" class="screenshot">
+                </div>
+            """
+        else:
+            screenshot_html = """
+                <div class="screenshot-container">
+                    <div class="screenshot-title">📸 监控截图</div>
+                    <div class="no-screenshot">
+                        📷 该面板暂无截图<br>
+                        <small>截图可能正在生成或已丢失</small>
+                    </div>
+                </div>
+            """
+        
         html_template += f"""
                 <div class="panel-group">
                     <div class="panel-title">
                         <span>{icon}</span>
                         <span>{panel_name}</span>
                     </div>
-                    <div class="metrics-grid">
+                    
+                    <div class="panel-content">
+                        <div class="metrics-grid">
         """
         
         for item in items:
@@ -418,7 +559,9 @@ def get_email_content(json_file='monitor_data.json'):
                         </div>
             '''
         
-        html_template += """
+        html_template += f"""
+                        </div>
+                        {screenshot_html}
                     </div>
                 </div>
         """
@@ -433,9 +576,51 @@ def get_email_content(json_file='monitor_data.json'):
                 <div class="report-info">
                     <div>数据源: Prometheus监控系统</div>
                     <div>生成工具: Python HTML报告生成器</div>
+                    <div>截图数量: {len(screenshots)} 张</div>
                 </div>
             </div>
         </div>
+        
+        <script>
+            // 添加图片点击查看大图功能
+            document.addEventListener('DOMContentLoaded', function() {{
+                const screenshots = document.querySelectorAll('.screenshot');
+                screenshots.forEach(img => {{
+                    img.addEventListener('click', function() {{
+                        const modal = document.createElement('div');
+                        modal.style.cssText = `
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background: rgba(0,0,0,0.9);
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            z-index: 1000;
+                            cursor: pointer;
+                        `;
+                        
+                        const modalImg = document.createElement('img');
+                        modalImg.src = this.src;
+                        modalImg.style.cssText = `
+                            max-width: 90%;
+                            max-height: 90%;
+                            border-radius: 8px;
+                            box-shadow: 0 5px 30px rgba(0,0,0,0.5);
+                        `;
+                        
+                        modal.appendChild(modalImg);
+                        document.body.appendChild(modal);
+                        
+                        modal.addEventListener('click', function() {{
+                            document.body.removeChild(modal);
+                        }});
+                    }});
+                }});
+            }});
+        </script>
     </body>
     </html>
     """
