@@ -1,0 +1,54 @@
+{
+    "name": "21DK蓝集群",
+    "uid": "21dk-blue",
+    "panels": [
+        {
+            "title": "域名证书到期时间",
+            "id": "2104",
+            "expr": "(probe_ssl_earliest_cert_expiry{project=\"21dk\", env=~\"prod\"} - time() ) / 3600 /24",
+            "get_value": "min"
+        },
+        {
+            "title": "服务器资源总览表",
+            "id": "2142",
+            "expr": "",
+            "get_value": ""
+        },
+        {
+            "title": "节点CPU使用率",
+            "id": "2149",
+            "expr": "1 - avg(irate(node_cpu_seconds_total{project=~\"21dk\", env=~\"prod\",mode=\"idle\",k8s=\"blue_toyota\"}[30m])) by (instance)",
+            "get_value": "max"
+        },
+        {
+            "title": "系统平均负载",
+            "id": "2150",
+            "expr": "node_load1{project=~\"21dk\", env=~\"prod\",k8s=\"blue_toyota\"}",
+            "get_value": "max"
+        },
+        {
+            "title": "节点磁盘使用率",
+            "id": "2151",
+            "expr": "1-(node_filesystem_free_bytes{project=~\"21dk\", env=~\"prod\",fstype=~\"ext4|xfs|ext3\",mountpoint=~\"/|/opt/docker|/logs\",k8s=\"blue_toyota\"} / node_filesystem_size_bytes{project=~\"21dk\",env=~\"prod\",fstype=~\"ext4|xfs|ext3\",mountpoint=~\"/|/opt/docker|/logs\",k8s=\"blue_toyota\"})",
+            "get_value": "max"
+        },
+        {
+            "title": "节点内存使用率",
+            "id": "2152",
+            "expr": "1 - (node_memory_MemAvailable_bytes{project=~\"21dk\", env=~\"prod\",k8s=\"blue_toyota\"} / node_memory_MemTotal_bytes{project=~\"21dk\", env=~\"prod\",k8s=\"blue_toyota\"})",
+            "get_value": "max"
+        },
+        {
+            "title": "POD内存使用量",
+            "id": "2167",
+            "expr": "sum by(pod) (container_memory_rss{project=\"21dk\",env=\"prod\",k8s=\"blue_toyota\",namespace=\"default\",name=~\"^k8s_.*|^[0-9a-z]{64}\"})",
+            "get_value": "max"
+        },
+        {
+            "title": "POD重启次数统计",
+            "id": "2168",
+            "expr": "sum by (pod) (increase(kube_pod_container_status_restarts_total{project=\"21dk\",env=\"prod\",k8s=\"blue_toyota\",namespace=\"default\"}[$__range]))",
+            "get_value": "max"
+        }
+    ]
+}
