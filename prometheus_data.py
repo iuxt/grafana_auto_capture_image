@@ -49,7 +49,7 @@ def get_max_value_with_labels(data):
     Returns:
         dict: 包含最大值及对应标签信息的字典，格式如下：
             {
-                'max_value': float,        # 最大值
+                'value': float,        # 最大值
                 'labels': dict,            # 对应的标签信息
                 'timestamp': float,        # 最大值出现的时间戳
                 'timestamp_formatted': str, # 格式化的时间戳
@@ -57,7 +57,7 @@ def get_max_value_with_labels(data):
     """
     # 初始化结果
     result = {
-        'max_value': None,
+        'value': None,
         'labels': None,
         'timestamp': None,
         'timestamp_formatted': None
@@ -98,7 +98,7 @@ def get_max_value_with_labels(data):
                 if current_value > max_value:
                     max_value = current_value
                     max_value_info = {
-                        'max_value': current_value,
+                        'value': current_value,
                         'labels': labels,
                         'timestamp': timestamp
                     }
@@ -126,7 +126,7 @@ def get_min_value_with_labels(data):
     Returns:
         dict: 包含最小值及对应标签信息的字典，格式如下：
             {
-                'min_value': float,        # 最小值
+                'value': float,        # 最小值
                 'labels': dict,            # 对应的标签信息
                 'timestamp': float,        # 最小值出现的时间戳
                 'timestamp_formatted': str, # 格式化的时间戳
@@ -134,7 +134,7 @@ def get_min_value_with_labels(data):
     """
     # 初始化结果
     result = {
-        'min_value': None,
+        'value': None,
         'labels': None,
         'timestamp': None,
         'timestamp_formatted': None
@@ -175,7 +175,7 @@ def get_min_value_with_labels(data):
                 if current_value < min_value:
                     min_value = current_value
                     min_value_info = {
-                        'min_value': current_value,
+                        'value': current_value,
                         'labels': labels,
                         'timestamp': timestamp
                     }
@@ -203,14 +203,14 @@ def get_avg_value_with_labels(data):
     Returns:
         dict: 包含平均值及相关信息的字典，格式如下：
             {
-                'avg_value': float,        # 平均值
+                'value': float,        # 平均值
                 'total_samples': int,      # 有效样本数量
                 'labels': list            # 所有labels信息
             }
     """
     # 初始化结果
     result = {
-        'avg_value': None,
+        'value': None,
         'total_samples': 0
     }
     
@@ -253,7 +253,7 @@ def get_avg_value_with_labels(data):
     # 如果有有效样本，计算平均值
     if sample_count > 0:
         avg_value = total_value / sample_count
-        result['avg_value'] = avg_value
+        result['value'] = avg_value
         result['total_samples'] = sample_count
     
     return result
@@ -273,8 +273,8 @@ if __name__ == '__main__':
     
     # 打印结果
     print("\n===== 最大值查询结果 =====")
-    if max_info['max_value'] is not None:
-        print(f"最大值: {max_info['max_value']}")
+    if max_info['value'] is not None:
+        print(f"最大值: {max_info['value']}")
         print(f"最大值出现时间: {max_info['timestamp_formatted']}")
         print(f"对应的标签信息: {max_info['labels']}")
     else:
@@ -285,8 +285,8 @@ if __name__ == '__main__':
     
     # 打印结果
     print("\n===== 最小值查询结果 =====")
-    if min_info['min_value'] is not None:
-        print(f"最小值: {min_info['min_value']}")
+    if min_info['value'] is not None:
+        print(f"最小值: {min_info['value']}")
         print(f"最小值出现时间: {min_info['timestamp_formatted']}")
         print(f"对应的标签信息: {min_info['labels']}")
     else:
@@ -297,8 +297,8 @@ if __name__ == '__main__':
     
     # 打印结果
     print("\n===== 平均值查询结果 =====")
-    if avg_info['avg_value'] is not None:
-        print(f"平均值: {avg_info['avg_value']}")
+    if avg_info['value'] is not None:
+        print(f"平均值: {avg_info['value']}")
         print(f"有效样本数量: {avg_info['total_samples']}")
     else:
         print("未找到有效数据")
